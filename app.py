@@ -281,6 +281,29 @@ def borrar_archivo_drive(link):
     except:
 
         pass
+# =========================
+# BORRAR FILA SHEETS
+# =========================
+
+def borrar_fila_historial(row_number):
+
+    sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=EXCEL_FILE_ID,
+        body={
+            "requests": [
+                {
+                    "deleteDimension": {
+                        "range": {
+                            "sheetId": 1,
+                            "dimension": "ROWS",
+                            "startIndex": row_number,
+                            "endIndex": row_number + 1
+                        }
+                    }
+                }
+            ]
+        }
+    ).execute()
 
 # =========================
 # BUSCAR O CREAR CARPETA
@@ -649,22 +672,24 @@ try:
                 row["Link"]
             )
 
-        with c6:
+with c6:
 
-            if st.button(
-                "🗑",
-                key=f"delete_{i}"
-            ):
+    if st.button(
+        "🗑",
+        key=f"delete_{i}"
+    ):
 
-                borrar_archivo_drive(
-                    row["Link"]
-                )
+        borrar_archivo_drive(
+            row["Link"]
+        )
 
-                st.warning(
-                    "⚠ Documento eliminado de Drive"
-                )
+        borrar_fila_historial(
+            i + 1
+        )
 
-except:
+        st.cache_data.clear()
+
+        st.rerun()except:
 
     st.warning(
         "No se pudo cargar historial"
