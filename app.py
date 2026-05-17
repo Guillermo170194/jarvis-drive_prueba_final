@@ -672,24 +672,26 @@ try:
                 row["Link"]
             )
 
-with c6:
+        with c6:
 
-    if st.button(
-        "🗑",
-        key=f"delete_{i}"
-    ):
+            if st.button(
+                "🗑",
+                key=f"delete_{i}"
+            ):
 
-        borrar_archivo_drive(
-            row["Link"]
-        )
+                borrar_archivo_drive(
+                    row["Link"]
+                )
 
-        borrar_fila_historial(
-            i + 1
-        )
+                borrar_fila_historial(
+                    i + 1
+                )
 
-        st.cache_data.clear()
+                st.cache_data.clear()
 
-        st.rerun()except:
+                st.rerun()
+
+except:
 
     st.warning(
         "No se pudo cargar historial"
