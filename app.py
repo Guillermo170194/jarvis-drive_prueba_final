@@ -486,35 +486,37 @@ if st.button("📤 Guardar documento"):
             "Subiendo archivo..."
         )
 
-with tempfile.NamedTemporaryFile(
-    delete=False
-) as temp_file:
+        with tempfile.NamedTemporaryFile(
+            delete=False
+        ) as temp_file:
 
-    temp_file.write(
-        archivo.getbuffer()
-    )
+            temp_file.write(
+                archivo.getbuffer()
+            )
 
-    temp_path = temp_file.name
+            temp_path = temp_file.name
 
-    tipo_archivo = (
-        tipo
-        .replace(" ", "_")
-    )
+            tipo_archivo = (
+                tipo
+                .replace(" ", "_")
+            )
 
-    nombre_drive = (
-        f"{tipo_archivo}_{clues}_{archivo.name}"
-    )
+            nombre_drive = (
+                f"{tipo_archivo}_{clues}_{archivo.name}"
+            )
 
-    carpeta_entidad = (
-        obtener_carpeta_entidad(
-            entidad
-        )
-    )
+            carpeta_entidad = (
+                obtener_carpeta_entidad(
+                    entidad
+                )
+            )
 
-    file_metadata = {
-        "name": nombre_drive,
-        "parents": [carpeta_entidad]
-    }        media = MediaFileUpload(
+            file_metadata = {
+                "name": nombre_drive,
+                "parents": [carpeta_entidad]
+            }
+
+        media = MediaFileUpload(
             temp_path,
             resumable=True
         )
@@ -536,10 +538,6 @@ with tempfile.NamedTemporaryFile(
 
         os.remove(temp_path)
 
-        # =========================
-        # NUEVA FILA
-        # =========================
-
         nueva_fila = pd.DataFrame([
             {
                 "Fecha": pd.Timestamp.now(),
@@ -559,10 +557,6 @@ with tempfile.NamedTemporaryFile(
             ignore_index=True
         )
 
-# actualizar_excel(
-#     historial_guardado
-# )
-
         st.success(
             "✅ Documento guardado correctamente"
         )
@@ -571,7 +565,6 @@ with tempfile.NamedTemporaryFile(
             "📂 Abrir archivo",
             drive_link
         )
-
 # =========================
 # HISTORIAL
 # =========================
