@@ -103,7 +103,6 @@ drive_service = build(
 # =========================
 
 @st.cache_data(ttl=30)
-@st.cache_data(ttl=30)
 def descargar_base_operativa():
 
     request = (
@@ -246,10 +245,17 @@ except:
 # LIMPIEZA COLUMNAS
 # =========================
 
+base_operativa.columns = (
+st.write(base_operativa.columns.tolist())
+    base_operativa.columns
+    .astype(str)
+    .str.strip()
+)
+
 base_operativa[
     "CARPETA FÍSCA (Si/no)"
 ] = (
-    historial_base[
+    base_operativa[
         "CARPETA FÍSCA (Si/no)"
     ]
     .astype(str)
@@ -257,10 +263,10 @@ base_operativa[
     .str.strip()
 )
 
-historial_base[
+base_operativa[
     "CORRECTO/INCORRECTO"
 ] = (
-    historial_base[
+    base_operativa[
         "CORRECTO/INCORRECTO"
     ]
     .astype(str)
@@ -272,36 +278,36 @@ historial_base[
 # KPIs PRINCIPALES
 # =========================
 
-correctos = historial_base[
+correctos = base_operativa[
     (
-        historial_base[
+        base_operativa[
             "CARPETA FÍSCA (Si/no)"
         ] == "SI"
     )
     &
     (
-        historial_base[
+        base_operativa[
             "CORRECTO/INCORRECTO"
         ] == "CORRECTO"
     )
 ].shape[0]
 
-incorrectos = historial_base[
+incorrectos = base_operativa[
     (
-        historial_base[
+        base_operativa[
             "CARPETA FÍSCA (Si/no)"
         ] == "SI"
     )
     &
     (
-        historial_base[
+        base_operativa[
             "CORRECTO/INCORRECTO"
         ] == "INCORRECTO"
     )
 ].shape[0]
 
-no_entregados = historial_base[
-    historial_base[
+no_entregados = base_operativa[
+    base_operativa[
         "CARPETA FÍSCA (Si/no)"
     ] == "NO"
 ].shape[0]
@@ -336,101 +342,6 @@ with k3:
     )
 
 st.markdown("---")
-# =========================
-# LIMPIEZA COLUMNAS
-# =========================
-
-historial_base[
-    "CARPETA FÍSCA (Si/no)"
-] = (
-    historial_base[
-        "CARPETA FÍSCA (Si/no)"
-    ]
-    .astype(str)
-    .str.upper()
-    .str.strip()
-)
-
-historial_base[
-    "CORRECTO/INCORRECTO"
-] = (
-    historial_base[
-        "CORRECTO/INCORRECTO"
-    ]
-    .astype(str)
-    .str.upper()
-    .str.strip()
-)
-
-# =========================
-# KPIs PRINCIPALES
-# =========================
-
-correctos = historial_base[
-    (
-        historial_base[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        historial_base[
-            "CORRECTO/INCORRECTO"
-        ] == "CORRECTO"
-    )
-].shape[0]
-
-incorrectos = historial_base[
-    (
-        historial_base[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        historial_base[
-            "CORRECTO/INCORRECTO"
-        ] == "INCORRECTO"
-    )
-].shape[0]
-
-no_entregados = historial_base[
-    historial_base[
-        "CARPETA FÍSCA (Si/no)"
-    ] == "NO"
-].shape[0]
-
-# =========================
-# KPIs VISUALES
-# =========================
-
-st.markdown("---")
-
-k1, k2, k3 = st.columns(3)
-
-with k1:
-
-    st.metric(
-        "✅ Correctos",
-        correctos
-    )
-
-with k2:
-
-    st.metric(
-        "❌ Incorrectos",
-        incorrectos
-    )
-
-with k3:
-
-    st.metric(
-        "📭 No entregados",
-        no_entregados
-    )
-
-st.markdown("---")
-
 
 # =========================
 # CATÁLOGOS
@@ -600,7 +511,7 @@ st.markdown(
 
 try:
 
-    historial = descargar_excel()
+    historial = descargar_historial()
 
     st.dataframe(
         historial,
