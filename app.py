@@ -107,9 +107,10 @@ def descargar_base_operativa():
 
     request = (
         drive_service.files()
-        .get_media(
-            fileId=EXCEL_FILE_ID
-        )
+.export_media(
+    fileId=EXCEL_FILE_ID,
+    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
     )
 
     archivo = io.BytesIO()
@@ -138,9 +139,10 @@ def descargar_historial():
 
     request = (
         drive_service.files()
-        .get_media(
-            fileId=EXCEL_FILE_ID
-        )
+.export_media(
+    fileId=EXCEL_FILE_ID,
+    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
     )
 
     archivo = io.BytesIO()
@@ -494,10 +496,10 @@ if st.button("📤 Guardar documento"):
 
             temp_path = temp_file.name
 
-            tipo_archivo = (
-                tipo
-               .replace(" ", "_")
-            )
+tipo_archivo = (
+    tipo
+    .replace(" ", "_")
+)
 
             nombre_drive = (
                 f"{tipo_archivo}_{clues}_{archivo.name}"
