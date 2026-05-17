@@ -195,6 +195,114 @@ try:
         .astype(str)
         .str.strip()
     )
+
+except:
+
+    historial_base = pd.DataFrame(
+        columns=[
+            "Fecha",
+            "Entidad",
+            "CLUES",
+            "Tipo",
+            "Archivo",
+            "Link"
+        ]
+    )
+
+# =========================
+# LIMPIEZA COLUMNAS
+# =========================
+
+historial_base[
+    "CARPETA FÍSCA (Si/no)"
+] = (
+    historial_base[
+        "CARPETA FÍSCA (Si/no)"
+    ]
+    .astype(str)
+    .str.upper()
+    .str.strip()
+)
+
+historial_base[
+    "CORRECTO/INCORRECTO"
+] = (
+    historial_base[
+        "CORRECTO/INCORRECTO"
+    ]
+    .astype(str)
+    .str.upper()
+    .str.strip()
+)
+
+# =========================
+# KPIs PRINCIPALES
+# =========================
+
+correctos = historial_base[
+    (
+        historial_base[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        historial_base[
+            "CORRECTO/INCORRECTO"
+        ] == "CORRECTO"
+    )
+].shape[0]
+
+incorrectos = historial_base[
+    (
+        historial_base[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        historial_base[
+            "CORRECTO/INCORRECTO"
+        ] == "INCORRECTO"
+    )
+].shape[0]
+
+no_entregados = historial_base[
+    historial_base[
+        "CARPETA FÍSCA (Si/no)"
+    ] == "NO"
+].shape[0]
+
+# =========================
+# KPIs VISUALES
+# =========================
+
+st.markdown("---")
+
+k1, k2, k3 = st.columns(3)
+
+with k1:
+
+    st.metric(
+        "✅ Correctos",
+        correctos
+    )
+
+with k2:
+
+    st.metric(
+        "❌ Incorrectos",
+        incorrectos
+    )
+
+with k3:
+
+    st.metric(
+        "📭 No entregados",
+        no_entregados
+    )
+
+st.markdown("---")
 # =========================
 # LIMPIEZA COLUMNAS
 # =========================
