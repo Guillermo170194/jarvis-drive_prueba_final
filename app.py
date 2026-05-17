@@ -225,6 +225,10 @@ def actualizar_excel(df):
 # AGREGAR FILA GOOGLE SHEETS
 # =========================
 
+# =========================
+# AGREGAR FILA GOOGLE SHEETS
+# =========================
+
 def guardar_historial_sheets(
     fecha,
     entidad,
@@ -233,6 +237,53 @@ def guardar_historial_sheets(
     archivo,
     link
 ):
+
+    values = [[
+        str(fecha),
+        entidad,
+        clues,
+        tipo,
+        archivo,
+        link
+    ]]
+
+    body = {
+        "values": values
+    }
+
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=EXCEL_FILE_ID,
+        range="HISTORIAL_DOCUMENTAL!A:F",
+        valueInputOption="USER_ENTERED",
+        body=body
+    ).execute()
+
+
+# =========================
+# BORRAR ARCHIVO DRIVE
+# =========================
+
+def borrar_archivo_drive(link):
+
+    try:
+
+        file_id = (
+            link
+            .split("/d/")[1]
+            .split("/")[0]
+        )
+
+        drive_service.files().delete(
+            fileId=file_id,
+            supportsAllDrives=True
+        ).execute()
+
+    except:
+
+        pass
+    except:
+
+        pass
 
     values = [[
         str(fecha),
@@ -595,66 +646,43 @@ try:
 
     historial = descargar_historial()
 
-    historial["👁 Ver"] = historial["Link"]
+for i, row in historial.iterrows():
 
-    st.data_editor(
-        historial[
-            [
-                "Fecha",
-                "Entidad",
-                "CLUES",
-                "Tipo",
-                "👁 Ver"
-            ]
-        ],
-        column_config={
-            "👁 Ver": st.column_config.LinkColumn(
-                "👁 Ver",
-                display_text="Abrir"
+    c1, c2, c3, c4, c5, c6 = st.columns(
+        [2, 2, 2, 2, 1, 1]
+    )
+
+    with c1:
+        st.write(row["Fecha"])
+
+    with c2:
+        st.write(row["Entidad"])
+
+    with c3:
+        st.write(row["CLUES"])
+
+    with c4:
+        st.write(row["Tipo"])
+
+    with c5:
+
+        st.link_button(
+            "👁",
+            row["Link"]
+        )
+
+    with c6:
+
+        if st.button(
+            "🗑",
+            key=f"delete_{i}"
+        ):
+
+            borrar_archivo_drive(
+                row["Link"]
             )
-        },
-        hide_index=True,
-        use_container_width=True
-    )
 
-except:
-
-    st.warning(
-        "No se pudo cargar historial"
-    )
-
-# =========================
-# CARGAR HISTORIAL
-# =========================
-
-try:
-
-    historial = descargar_historial()
-
-    historial["👁 Ver"] = historial["Link"]
-
-    st.data_editor(
-        historial[
-            [
-                "Fecha",
-                "Entidad",
-                "CLUES",
-                "Tipo",
-                "👁 Ver"
-            ]
-        ],
-        column_config={
-            "👁 Ver": st.column_config.LinkColumn(
-                "👁 Ver",
-                display_text="Abrir"
+            st.warning(
+                "⚠ Documento eliminado de Drive"
             )
-        },
-        hide_index=True,
-        use_container_width=True
-    )
 
-except:
-
-    st.warning(
-        "No se pudo cargar historial"
-    )
