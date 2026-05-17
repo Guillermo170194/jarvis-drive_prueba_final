@@ -214,6 +214,64 @@ def actualizar_excel(df):
 
     os.remove(temp_excel.name)
 # =========================
+# BUSCAR O CREAR CARPETA
+# =========================
+
+def obtener_carpeta_entidad(entidad):
+
+    query = f"""
+    name = '{entidad}'
+    and mimeType = 'application/vnd.google-apps.folder'
+    and '{FOLDER_ID}' in parents
+    and trashed = false
+    """
+
+    resultados = (
+        drive_service.files()
+        .list(
+            q=query,
+            fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        )
+        .execute()
+    )
+
+    carpetas = resultados.get(
+        "files",
+        []
+    )
+
+    # =========================
+    # SI YA EXISTE
+    # =========================
+
+    if carpetas:
+
+        return carpetas[0]["id"]
+
+    # =========================
+    # SI NO EXISTE -> CREAR
+    # =========================
+
+    metadata = {
+        "name": entidad,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [FOLDER_ID]
+    }
+
+    carpeta = (
+        drive_service.files()
+        .create(
+            body=metadata,
+            fields="id",
+            supportsAllDrives=True
+        )
+        .execute()
+    )
+
+    return carpeta["id"]
+# =========================
 # CARGAR HISTORIAL
 # =========================
 
@@ -431,14 +489,24 @@ if st.button("📤 Guardar documento"):
 
             temp_path = temp_file.name
 
-        nombre_drive = (
-            f"{entidad}_{clues}_{archivo.name}"
-        )
+            tipo_archivo = (
+                tipo
+               .replace(" ", "_")
+            )
 
-        file_metadata = {
-            "name": nombre_drive,
-            "parents": [FOLDER_ID]
-        }
+            nombre_drive = (
+                f"{tipo_archivo}_{clues}_{archivo.name}"
+            )
+            carpeta_entidad = (
+                obtener_carpeta_entidad(
+                    entidad
+                )
+            )
+
+            file_metadata = {
+                "name": nombre_drive,
+                "parents": [carpeta_entidad]
+            }
 
         media = MediaFileUpload(
             temp_path,
