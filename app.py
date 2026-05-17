@@ -319,38 +319,27 @@ try:
 
     historial = descargar_historial()
 
-    for i, row in historial.iterrows():
+    historial["👁 Ver"] = historial["Link"]
 
-        c1, c2, c3, c4, c5 = st.columns(
-            [2, 2, 2, 2, 1]
-        )
-
-        with c1:
-            st.write(
-                row["Fecha"]
+    st.data_editor(
+        historial[
+            [
+                "Fecha",
+                "Entidad",
+                "CLUES",
+                "Tipo",
+                "👁 Ver"
+            ]
+        ],
+        column_config={
+            "👁 Ver": st.column_config.LinkColumn(
+                "👁 Ver",
+                display_text="Abrir"
             )
-
-        with c2:
-            st.write(
-                row["Entidad"]
-            )
-
-        with c3:
-            st.write(
-                row["CLUES"]
-            )
-
-        with c4:
-            st.write(
-                row["Tipo"]
-            )
-
-        with c5:
-
-            st.link_button(
-                "👁",
-                row["Link"]
-            )
+        },
+        hide_index=True,
+        use_container_width=True
+    )
 
 except:
 
