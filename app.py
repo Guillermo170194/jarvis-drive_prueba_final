@@ -187,6 +187,12 @@ try:
 
     historial_base = descargar_excel()
 
+    historial_base.columns = (
+        historial_base.columns
+        .astype(str)
+        .str.strip()
+    )
+
 except:
 
     historial_base = pd.DataFrame(
