@@ -278,6 +278,10 @@ def borrar_archivo_drive(link):
             supportsAllDrives=True
         ).execute()
 
+    except:
+
+        pass
+
 # =========================
 # BUSCAR O CREAR CARPETA
 # =========================
