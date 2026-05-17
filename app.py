@@ -245,13 +245,12 @@ except:
 # LIMPIEZA COLUMNAS
 # =========================
 
-base_operativa.columns = (
-    base_operativa.columns
-    .astype(str)
-    .str.strip()
+base_operativa.rename(
+    columns={
+        "CORRECTO/INCORRECTO ": "CORRECTO/INCORRECTO"
+    },
+    inplace=True
 )
-
-st.write(base_operativa.columns.tolist())
 
 base_operativa[
     "CARPETA FÍSCA (Si/no)"
