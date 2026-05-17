@@ -312,6 +312,318 @@ def obtener_carpeta_entidad(entidad):
 
     return carpeta["id"]
 # =========================
+# CARGAR BASES
+# =========================
+
+try:
+
+    base_operativa = descargar_base_operativa()
+
+    historial_base = descargar_historial()
+
+except Exception as e:
+
+    st.error(e)
+
+    base_operativa = pd.DataFrame()
+
+    historial_base = pd.DataFrame()
+
+# =========================
+# LIMPIAR COLUMNAS
+# =========================
+
+base_operativa.columns = (
+    base_operativa.columns
+    .astype(str)
+    .str.strip()
+)
+
+# =========================
+# LIMPIEZA DATOS
+# =========================
+
+base_operativa[
+    "CARPETA FÍSCA (Si/no)"
+] = (
+    base_operativa[
+        "CARPETA FÍSCA (Si/no)"
+    ]
+    .astype(str)
+    .str.upper()
+    .str.strip()
+)
+
+base_operativa[
+    "CORRECTO/INCORRECTO"
+] = (
+    base_operativa[
+        "CORRECTO/INCORRECTO"
+    ]
+    .astype(str)
+    .str.upper()
+    .str.strip()
+)
+
+# =========================
+# KPIs
+# =========================
+
+correctos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "CORRECTO"
+    )
+].shape[0]
+
+incorrectos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "INCORRECTO"
+    )
+].shape[0]
+
+no_entregados = base_operativa[
+    base_operativa[
+        "CARPETA FÍSCA (Si/no)"
+    ] == "NO"
+].shape[0]
+
+# =========================
+# KPIs VISUALES
+# =========================
+
+st.markdown("---")
+
+k1, k2, k3 = st.columns(3)
+
+with k1:
+
+    st.metric(
+        "✅ Correctos",
+        correctos
+    )
+
+with k2:
+
+    st.metric(
+        "❌ Incorrectos",
+        incorrectos
+    )
+
+with k3:
+
+    st.metric(
+        "📭 No entregados",
+        no_entregados
+    )
+
+# =========================
+# CATÁLOGOS
+# =========================
+
+entidades = sorted(
+    base_operativa[
+        "ENTIDAD"
+    ]
+    .dropna()
+    .astype(str)
+    .unique()
+)
+
+# =========================
+# FORMULARIO
+# =========================
+
+st.markdown("---")
+
+c1, c2 = st.columns(2)
+
+with c1:
+
+    entidad = st.selectbox(
+        "📍 Entidad",
+        entidades
+    )
+
+with c2:
+
+    clues_filtrados = (
+        base_operativa[
+            base_operativa["ENTIDAD"] == entidad
+        ]["CLUES"]
+        .dropna()
+        .astype(str)
+        .unique()
+    )
+
+    clues = st.selectbox(
+        "🏥 CLUES",
+        sorted(clues_filtrados)
+    )
+
+tipo = st.selectbox(
+    "📄 Tipo documental",
+    [
+        "Entrega",
+        "Corrección",
+        "Primer reiterativo",
+        "Segundo reiterativo",
+        "Tercer reiterativo",
+        "Correo",
+        "Otro"
+    ]
+)
+
+archivo = st.file_uploader(
+    "📎 Subir archivo"
+)
+
+# =========================
+# GUARDAR DOCUMENTO
+# =========================
+
+if st.button("📤 Guardar documento"):
+
+    if not archivo:
+
+        st.warning(
+            "⚠ Debes subir un archivo"
+        )
+
+    else:
+
+        st.info(
+            "Subiendo archivo..."
+        )
+
+        with tempfile.NamedTemporaryFile(
+            delete=False
+        ) as temp_file:
+
+            temp_file.write(
+                archivo.getbuffer()
+            )
+
+            temp_path = temp_file.name
+
+            tipo_archivo = (
+                tipo
+                .replace(" ", "_")
+            )
+
+            nombre_drive = (
+                f"{tipo_archivo}_{clues}_{archivo.name}"
+            )
+
+            carpeta_entidad = (
+                obtener_carpeta_entidad(
+                    entidad
+                )
+            )
+
+            file_metadata = {
+                "name": nombre_drive,
+                "parents": [carpeta_entidad]
+            }
+
+        media = MediaFileUpload(
+            temp_path,
+            resumable=True
+        )
+
+        uploaded_file = (
+            drive_service.files()
+            .create(
+                body=file_metadata,
+                media_body=media,
+                fields="id, webViewLink",
+                supportsAllDrives=True
+            )
+            .execute()
+        )
+
+        drive_link = uploaded_file[
+            "webViewLink"
+        ]
+
+        os.remove(temp_path)
+
+        guardar_historial_sheets(
+            fecha=pd.Timestamp.now(),
+            entidad=entidad,
+            clues=clues,
+            tipo=tipo,
+            archivo=archivo.name,
+            link=drive_link
+        )
+
+        st.success(
+            "✅ Documento guardado correctamente"
+        )
+
+        st.link_button(
+            "📂 Abrir archivo",
+            drive_link
+        )
+
+# =========================
+# HISTORIAL
+# =========================
+
+st.markdown("---")
+
+st.markdown(
+    "## 📚 Historial documental"
+)
+
+try:
+
+    historial = descargar_historial()
+
+    historial["👁 Ver"] = historial["Link"]
+
+    st.data_editor(
+        historial[
+            [
+                "Fecha",
+                "Entidad",
+                "CLUES",
+                "Tipo",
+                "👁 Ver"
+            ]
+        ],
+        column_config={
+            "👁 Ver": st.column_config.LinkColumn(
+                "👁 Ver",
+                display_text="Abrir"
+            )
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+
+except:
+
+    st.warning(
+        "No se pudo cargar historial"
+    )
+
+# =========================
 # CARGAR HISTORIAL
 # =========================
 
