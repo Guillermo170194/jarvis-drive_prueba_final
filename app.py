@@ -278,32 +278,6 @@ def borrar_archivo_drive(link):
             supportsAllDrives=True
         ).execute()
 
-    except:
-
-        pass
-    except:
-
-        pass
-
-    values = [[
-        str(fecha),
-        entidad,
-        clues,
-        tipo,
-        archivo,
-        link
-    ]]
-
-    body = {
-        "values": values
-    }
-
-    sheets_service.spreadsheets().values().append(
-        spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:F",
-        valueInputOption="USER_ENTERED",
-        body=body
-    ).execute()
 # =========================
 # BUSCAR O CREAR CARPETA
 # =========================
@@ -646,43 +620,48 @@ try:
 
     historial = descargar_historial()
 
-for i, row in historial.iterrows():
+    for i, row in historial.iterrows():
 
-    c1, c2, c3, c4, c5, c6 = st.columns(
-        [2, 2, 2, 2, 1, 1]
-    )
-
-    with c1:
-        st.write(row["Fecha"])
-
-    with c2:
-        st.write(row["Entidad"])
-
-    with c3:
-        st.write(row["CLUES"])
-
-    with c4:
-        st.write(row["Tipo"])
-
-    with c5:
-
-        st.link_button(
-            "👁",
-            row["Link"]
+        c1, c2, c3, c4, c5, c6 = st.columns(
+            [2, 2, 2, 2, 1, 1]
         )
 
-    with c6:
+        with c1:
+            st.write(row["Fecha"])
 
-        if st.button(
-            "🗑",
-            key=f"delete_{i}"
-        ):
+        with c2:
+            st.write(row["Entidad"])
 
-            borrar_archivo_drive(
+        with c3:
+            st.write(row["CLUES"])
+
+        with c4:
+            st.write(row["Tipo"])
+
+        with c5:
+
+            st.link_button(
+                "👁",
                 row["Link"]
             )
 
-            st.warning(
-                "⚠ Documento eliminado de Drive"
-            )
+        with c6:
 
+            if st.button(
+                "🗑",
+                key=f"delete_{i}"
+            ):
+
+                borrar_archivo_drive(
+                    row["Link"]
+                )
+
+                st.warning(
+                    "⚠ Documento eliminado de Drive"
+                )
+
+except:
+
+    st.warning(
+        "No se pudo cargar historial"
+    )
