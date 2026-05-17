@@ -278,6 +278,7 @@ def obtener_carpeta_entidad(entidad):
 try:
 
     base_operativa = descargar_base_operativa()
+
     historial_base = descargar_historial()
 
     historial_base.columns = (
@@ -286,7 +287,7 @@ try:
         .str.strip()
     )
 
-except as e:
+except Exception as e:
 
     st.error(e)
 
