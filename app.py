@@ -398,18 +398,6 @@ with k3:
 
 st.markdown("---")
 
-except:
-
-    historial_base = pd.DataFrame(
-        columns=[
-            "Fecha",
-            "Entidad",
-            "CLUES",
-            "Tipo",
-            "Archivo",
-            "Link"
-        ]
-    )
 
 # =========================
 # CATÁLOGOS
