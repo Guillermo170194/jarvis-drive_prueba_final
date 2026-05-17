@@ -8,6 +8,7 @@ import pandas as pd
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
 from googleapiclient.http import (
     MediaFileUpload,
     MediaIoBaseDownload
@@ -95,6 +96,11 @@ credentials = (
 drive_service = build(
     "drive",
     "v3",
+    credentials=credentials
+)
+sheets_service = build(
+    "sheets",
+    "v4",
     credentials=credentials
 )
 
@@ -215,6 +221,38 @@ def actualizar_excel(df):
     )
 
     os.remove(temp_excel.name)
+# =========================
+# AGREGAR FILA GOOGLE SHEETS
+# =========================
+
+def guardar_historial_sheets(
+    fecha,
+    entidad,
+    clues,
+    tipo,
+    archivo,
+    link
+):
+
+    values = [[
+        str(fecha),
+        entidad,
+        clues,
+        tipo,
+        archivo,
+        link
+    ]]
+
+    body = {
+        "values": values
+    }
+
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=EXCEL_FILE_ID,
+        range="HISTORIAL_DOCUMENTAL!A:F",
+        valueInputOption="USER_ENTERED",
+        body=body
+    ).execute()
 # =========================
 # BUSCAR O CREAR CARPETA
 # =========================
@@ -549,14 +587,14 @@ if st.button("📤 Guardar documento"):
             }
         ])
 
-        historial_guardado = pd.concat(
-            [
-                historial_base,
-                nueva_fila
-            ],
-            ignore_index=True
+        guardar_historial_sheets(
+            fecha=pd.Timestamp.now(),
+            entidad=entidad,
+            clues=clues,
+            tipo=tipo,
+            archivo=archivo.name,
+            link=drive_link
         )
-
         st.success(
             "✅ Documento guardado correctamente"
         )
