@@ -355,10 +355,6 @@ entidades = sorted(
     .astype(str)
     .unique()
 )
-    .dropna()
-    .astype(str)
-    .unique()
-)
 
 # =========================
 # FORMULARIO
