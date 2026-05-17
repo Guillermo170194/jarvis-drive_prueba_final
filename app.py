@@ -103,7 +103,8 @@ drive_service = build(
 # =========================
 
 @st.cache_data(ttl=30)
-def descargar_excel():
+@st.cache_data(ttl=30)
+def descargar_base_operativa():
 
     request = (
         drive_service.files()
@@ -128,9 +129,40 @@ def descargar_excel():
     archivo.seek(0)
 
     return pd.read_excel(
-    archivo,
-    sheet_name="HISTORIAL_DOCUMENTAL"
-)
+        archivo,
+        sheet_name=0
+    )
+
+
+@st.cache_data(ttl=30)
+def descargar_historial():
+
+    request = (
+        drive_service.files()
+        .get_media(
+            fileId=EXCEL_FILE_ID
+        )
+    )
+
+    archivo = io.BytesIO()
+
+    downloader = MediaIoBaseDownload(
+        archivo,
+        request
+    )
+
+    done = False
+
+    while done is False:
+
+        status, done = downloader.next_chunk()
+
+    archivo.seek(0)
+
+    return pd.read_excel(
+        archivo,
+        sheet_name="HISTORIAL_DOCUMENTAL"
+    )
 
 # =========================
 # ACTUALIZAR EXCEL
@@ -188,7 +220,8 @@ def actualizar_excel(df):
 
 try:
 
-    historial_base = descargar_excel()
+    base_operativa = descargar_base_operativa()
+    historial_base = descargar_historial()
 
     historial_base.columns = (
         historial_base.columns
@@ -213,7 +246,7 @@ except:
 # LIMPIEZA COLUMNAS
 # =========================
 
-historial_base[
+base_operativa[
     "CARPETA FÍSCA (Si/no)"
 ] = (
     historial_base[
