@@ -245,11 +245,10 @@ except:
 # LIMPIEZA COLUMNAS
 # =========================
 
-base_operativa.rename(
-    columns={
-        "CORRECTO/INCORRECTO ": "CORRECTO/INCORRECTO"
-    },
-    inplace=True
+base_operativa.columns = (
+    base_operativa.columns
+    .astype(str)
+    .str.strip()
 )
 
 base_operativa[
