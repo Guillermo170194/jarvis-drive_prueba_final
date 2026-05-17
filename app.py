@@ -486,36 +486,35 @@ if st.button("📤 Guardar documento"):
             "Subiendo archivo..."
         )
 
-        with tempfile.NamedTemporaryFile(
-            delete=False
-        ) as temp_file:
+with tempfile.NamedTemporaryFile(
+    delete=False
+) as temp_file:
 
-            temp_file.write(
-                archivo.getbuffer()
-            )
+    temp_file.write(
+        archivo.getbuffer()
+    )
 
-            temp_path = temp_file.name
+    temp_path = temp_file.name
 
-tipo_archivo = (
-    tipo
-    .replace(" ", "_")
-)
+    tipo_archivo = (
+        tipo
+        .replace(" ", "_")
+    )
 
-            nombre_drive = (
-                f"{tipo_archivo}_{clues}_{archivo.name}"
-            )
-            carpeta_entidad = (
-                obtener_carpeta_entidad(
-                    entidad
-                )
-            )
+    nombre_drive = (
+        f"{tipo_archivo}_{clues}_{archivo.name}"
+    )
 
-            file_metadata = {
-                "name": nombre_drive,
-                "parents": [carpeta_entidad]
-            }
+    carpeta_entidad = (
+        obtener_carpeta_entidad(
+            entidad
+        )
+    )
 
-        media = MediaFileUpload(
+    file_metadata = {
+        "name": nombre_drive,
+        "parents": [carpeta_entidad]
+    }        media = MediaFileUpload(
             temp_path,
             resumable=True
         )
