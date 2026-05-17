@@ -246,11 +246,12 @@ except:
 # =========================
 
 base_operativa.columns = (
-st.write(base_operativa.columns.tolist())
     base_operativa.columns
     .astype(str)
     .str.strip()
 )
+
+st.write(base_operativa.columns.tolist())
 
 base_operativa[
     "CARPETA FÍSCA (Si/no)"
