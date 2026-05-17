@@ -241,7 +241,7 @@ with col2:
 
     clues_filtrados = (
         historial_base[
-            historial_base["ENTIDAD"] == entidad
+            historial_base["Entidad"] == entidad
         ]["CLUES"]
         .dropna()
         .astype(str)
