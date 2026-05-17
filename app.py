@@ -215,7 +215,7 @@ except:
 
 entidades = sorted(
     historial_base[
-        "ENTIDAD"
+        "Entidad"
     ]
     .dropna()
     .astype(str)
