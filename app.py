@@ -286,7 +286,11 @@ try:
         .str.strip()
     )
 
-except:
+except as e:
+
+    st.error(e)
+
+    base_operativa = pd.DataFrame()
 
     historial_base = pd.DataFrame(
         columns=[
