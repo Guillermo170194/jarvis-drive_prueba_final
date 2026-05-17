@@ -617,11 +617,38 @@ try:
 
     historial = descargar_historial()
 
-    st.dataframe(
-        historial,
-        use_container_width=True,
-        hide_index=True
+for i, row in historial.iterrows():
+
+    c1, c2, c3, c4, c5 = st.columns(
+        [2, 2, 2, 2, 1]
     )
+
+    with c1:
+        st.write(
+            row["Fecha"]
+        )
+
+    with c2:
+        st.write(
+            row["Entidad"]
+        )
+
+    with c3:
+        st.write(
+            row["CLUES"]
+        )
+
+    with c4:
+        st.write(
+            row["Tipo"]
+        )
+
+    with c5:
+
+        st.link_button(
+            "👁",
+            row["Link"]
+        )
 
 except:
 
