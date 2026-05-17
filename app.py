@@ -682,6 +682,7 @@ try:
                 borrar_archivo_drive(
                     row["Link"]
                 )
+	st.write(row["Link"])
 
                 borrar_fila_historial(
                     i + 1
