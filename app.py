@@ -348,9 +348,13 @@ st.markdown("---")
 # =========================
 
 entidades = sorted(
-    historial_base[
-        "Entidad"
+    base_operativa[
+        "ENTIDAD"
     ]
+    .dropna()
+    .astype(str)
+    .unique()
+)
     .dropna()
     .astype(str)
     .unique()
@@ -374,8 +378,8 @@ with col1:
 with col2:
 
     clues_filtrados = (
-        historial_base[
-            historial_base["Entidad"] == entidad
+        base_operativa[
+            base_operativa["ENTIDAD"] == entidad
         ]["CLUES"]
         .dropna()
         .astype(str)
