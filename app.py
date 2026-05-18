@@ -615,96 +615,85 @@ reiterativos = historial_docs[
     )
 ].shape[0]
 
-# =========================
+	
 # RESUMEN DOCUMENTAL
 # =========================
 
-resumen_entidad = []
+# =========================
+# MATRIZ DOCUMENTAL NACIONAL
+# =========================
 
-for entidad_nombre in sorted(
-    base_operativa["ENTIDAD"]
-    .dropna()
-    .astype(str)
-    .unique()
-):
+matriz_documental = []
 
-    historial_entidad = historial_docs[
-        historial_docs["Entidad"]
+tipos_documentales = [
+    "Entrega",
+    "Entrega UAS Y OIC",
+    "Corrección",
+    "Prórroga",
+    "Primer reiterativo",
+    "Segundo reiterativo",
+    "Tercer reiterativo",
+    "Cuarto reiterativo"
+]
+
+for _, row_base in base_operativa.iterrows():
+
+    entidad = str(
+        row_base["ENTIDAD"]
+    )
+
+    clues = str(
+        row_base["CLUES"]
+    )
+
+    almacen = str(
+        row_base["ALMACÉN"]
+    )
+
+    historial_clues = historial_docs[
+        historial_docs["CLUES"]
         .astype(str)
-        == entidad_nombre
+        == clues
     ]
 
-    entrega = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Entrega"
-    ].shape[0]
+    fila = {
+        "Entidad": entidad,
+        "CLUES": clues,
+        "ALMACÉN": almacen
+    }
 
-    entrega_uas = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Entrega UAS Y OIC"
-    ].shape[0]
+    for tipo_doc in tipos_documentales:
 
-    correccion = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Corrección"
-    ].shape[0]
+        documento = historial_clues[
+            historial_clues["Tipo"]
+            .astype(str)
+            == tipo_doc
+        ]
 
-    reiterativo_1 = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Primer reiterativo"
-    ].shape[0]
+        if documento.empty:
 
-    reiterativo_2 = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Segundo reiterativo"
-    ].shape[0]
+            fila[tipo_doc] = ""
+            fila[f"Fecha {tipo_doc}"] = ""
 
-    reiterativo_3 = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Tercer reiterativo"
-    ].shape[0]
-    reiterativo_4 = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Cuarto reiterativo"
-    ].shape[0]
-    prorroga = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Prórroga"
-    ].shape[0]
+        else:
 
-    correo = historial_entidad[
-        historial_entidad["Tipo"]
-        == "Correo"
-    ].shape[0]
+            ultimo = documento.iloc[-1]
 
-    resumen_entidad.append({
+            fila[tipo_doc] = (
+                ultimo["Archivo"]
+            )
 
-        "Entidad": entidad_nombre,
+            fila[f"Fecha {tipo_doc}"] = (
+                ultimo.iloc[5]
+            )
 
-        "Entrega": entrega,
-
-        "Entrega UAS Y OIC": entrega_uas,
-
-        "Corrección": correccion,
-
-        "1er Reiterativo": reiterativo_1,
-
-        "2do Reiterativo": reiterativo_2,
-
-        "3er Reiterativo": reiterativo_3,
-
-        "4to Reiterativo": reiterativo_4,
-
-        "Prórroga": prorroga,
-
-        "Correo": correo
-
-    })
+    matriz_documental.append(
+        fila
+    )
 
 df_resumen_entidad = pd.DataFrame(
-    resumen_entidad
+    matriz_documental
 )
-
 # =========================
 # KPIs VISUALES
 # =========================
@@ -776,7 +765,7 @@ if modulo == "🏠 Resumen nacional":
     st.markdown("---")
 
     st.markdown(
-        "## 📊 Resumen nacional por entidad"
+        "## 📋 Matriz documental nacional"
     )
 
     st.dataframe(
