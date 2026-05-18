@@ -48,6 +48,18 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+# =========================
+# SIDEBAR
+# =========================
+
+modulo = st.sidebar.radio(
+    "📂 Navegación",
+    [
+        "🏠 Resumen nacional",
+        "🏛 Estado",
+        "📚 Documental"
+    ]
+)
 
 # =========================
 # HEADER
@@ -471,30 +483,32 @@ no_entregados = base_operativa[
 # KPIs VISUALES
 # =========================
 
-st.markdown("---")
+if modulo == "🏠 Resumen nacional":
 
-k1, k2, k3 = st.columns(3)
+    st.markdown("---")
 
-with k1:
+    k1, k2, k3 = st.columns(3)
 
-    st.metric(
-        "✅ Correctos",
-        correctos
-    )
+    with k1:
 
-with k2:
+        st.metric(
+            "✅ Correctos",
+            correctos
+        )
 
-    st.metric(
-        "❌ Incorrectos",
-        incorrectos
-    )
+    with k2:
 
-with k3:
+        st.metric(
+            "❌ Incorrectos",
+            incorrectos
+        )
 
-    st.metric(
-        "📭 No entregados",
-        no_entregados
-    )
+    with k3:
+
+        st.metric(
+            "📭 No entregados",
+            no_entregados
+        )
 
 # =========================
 # CATÁLOGOS
@@ -510,308 +524,316 @@ entidades = sorted(
 )
 
 # =========================
-# FORMULARIO
+# DOCUMENTAL
 # =========================
 
-st.markdown("---")
+if modulo == "📚 Documental":
 
-c1, c2 = st.columns(2)
+    # =========================
+    # FORMULARIO
+    # =========================
 
-with c1:
+    st.markdown("---")
 
-    entidad = st.selectbox(
-        "📍 Entidad",
-        entidades
-    )
+    c1, c2 = st.columns(2)
 
-with c2:
+    with c1:
 
-    clues_filtrados = (
-        base_operativa[
-            base_operativa["ENTIDAD"] == entidad
-        ]["CLUES"]
-        .dropna()
-        .astype(str)
-        .unique()
-    )
-
-    clues = st.selectbox(
-        "🏥 CLUES",
-        sorted(clues_filtrados)
-    )
-
-tipo = st.selectbox(
-    "📄 Tipo documental",
-    [
-        "Entrega",
-        "Corrección",
-        "Primer reiterativo",
-        "Segundo reiterativo",
-        "Tercer reiterativo",
-        "Correo",
-        "Otro"
-    ]
-)
-
-archivo = st.file_uploader(
-    "📎 Subir archivo"
-)
-
-# =========================
-# GUARDAR DOCUMENTO
-# =========================
-
-if st.button("📤 Guardar documento"):
-
-    if not archivo:
-
-        st.warning(
-            "⚠ Debes subir un archivo"
+        entidad = st.selectbox(
+            "📍 Entidad",
+            entidades
         )
 
-    else:
-        # =========================
-        # VALIDAR DUPLICADOS
-        # =========================
+    with c2:
 
-        historial_actual = descargar_historial()
+        clues_filtrados = (
+            base_operativa[
+                base_operativa["ENTIDAD"] == entidad
+            ]["CLUES"]
+            .dropna()
+            .astype(str)
+            .unique()
+        )
 
-        existente = historial_actual[
-            (
-                historial_actual["CLUES"]
-                .astype(str)
-                == str(clues)
-            )
-            &
-            (
-                historial_actual["Tipo"]
-                .astype(str)
-                == str(tipo)
-            )
+        clues = st.selectbox(
+            "🏥 CLUES",
+            sorted(clues_filtrados)
+        )
+
+    tipo = st.selectbox(
+        "📄 Tipo documental",
+        [
+            "Entrega",
+            "Corrección",
+            "Primer reiterativo",
+            "Segundo reiterativo",
+            "Tercer reiterativo",
+            "Correo",
+            "Otro"
         ]
+    )
 
-        if not existente.empty:
+    archivo = st.file_uploader(
+        "📎 Subir archivo"
+    )
 
-            archivo_existente = (
-                existente.iloc[-1]
-            )
+    # =========================
+    # GUARDAR DOCUMENTO
+    # =========================
+
+    if st.button("📤 Guardar documento"):
+
+        if not archivo:
 
             st.warning(
-                f"⚠ Ya existe un documento "
-                f"de tipo '{tipo}' "
-                f"para la CLUES {clues}"
+                "⚠ Debes subir un archivo"
             )
+
+        else:
+
+            # =========================
+            # VALIDAR DUPLICADOS
+            # =========================
+
+            historial_actual = descargar_historial()
+
+            existente = historial_actual[
+                (
+                    historial_actual["CLUES"]
+                    .astype(str)
+                    == str(clues)
+                )
+                &
+                (
+                    historial_actual["Tipo"]
+                    .astype(str)
+                    == str(tipo)
+                )
+            ]
+
+            if not existente.empty:
+
+                archivo_existente = (
+                    existente.iloc[-1]
+                )
+
+                st.warning(
+                    f"⚠ Ya existe un documento "
+                    f"de tipo '{tipo}' "
+                    f"para la CLUES {clues}"
+                )
+
+                st.info(
+                    f"📄 Archivo actual: "
+                    f"{archivo_existente['Archivo']}"
+                )
+
+                reemplazar = st.button("♻ Sustituir")
+                )
+
+                if not reemplazar:
+
+                    st.stop()
+
+                # =========================
+                # MANDAR A PAPELERA
+                # =========================
+
+                try:
+
+                    drive_service.files().update(
+                        fileId=archivo_existente["File ID"],
+                        body={
+                            "trashed": True
+                        },
+                        supportsAllDrives=True
+                    ).execute()
+
+                    # =========================
+                    # BORRAR REGISTRO HISTORIAL
+                    # =========================
+
+                    historial_actual = (
+                        historial_actual.drop(
+                            existente.index
+                        )
+                    )
+
+                    historial_actual = (
+                        historial_actual.fillna("")
+                    )
+
+                    # limpiar hoja
+                    sheets_service.spreadsheets()\
+                        .values()\
+                        .clear(
+                            spreadsheetId=EXCEL_FILE_ID,
+                            range="HISTORIAL_DOCUMENTAL!A:G"
+                        ).execute()
+
+                    # reescribir
+                    values = [
+                        historial_actual.columns.tolist()
+                    ] + historial_actual.values.tolist()
+
+                    sheets_service.spreadsheets()\
+                        .values()\
+                        .update(
+                            spreadsheetId=EXCEL_FILE_ID,
+                            range="HISTORIAL_DOCUMENTAL!A1",
+                            valueInputOption="USER_ENTERED",
+                            body={
+                                "values": values
+                            }
+                        ).execute()
+
+                    st.success(
+                        "♻ Documento anterior sustituido"
+                    )
+
+                except Exception as e:
+
+                    st.error(e)
+
+                    st.stop()
 
             st.info(
-                f"📄 Archivo actual: "
-                f"{archivo_existente['Archivo']}"
+                "Subiendo archivo..."
             )
 
-            reemplazar = st.checkbox(
-                "Deseo sustituir el archivo existente"
-            )
+            with tempfile.NamedTemporaryFile(
+                delete=False
+            ) as temp_file:
 
-            if not reemplazar:
+                temp_file.write(
+                    archivo.getbuffer()
+                )
 
-                st.stop()
+                temp_path = temp_file.name
 
-            # =========================
-            # MANDAR A PAPELERA
-            # =========================
+                tipo_archivo = (
+                    tipo
+                    .replace(" ", "_")
+                )
 
-            try:
+                nombre_drive = (
+                    f"{tipo_archivo}_{clues}_{archivo.name}"
+                )
 
-                drive_service.files().update(
-                    fileId=archivo_existente["File ID"],
-                    body={
-                        "trashed": True
-                    },
-                    supportsAllDrives=True
-                ).execute()
-
-                # =========================
-                # BORRAR REGISTRO HISTORIAL
-                # =========================
-
-                historial_actual = (
-                    historial_actual.drop(
-                        existente.index
+                carpeta_entidad = (
+                    obtener_carpeta_entidad(
+                        entidad
                     )
                 )
 
-                historial_actual = (
-                    historial_actual.fillna("")
+                file_metadata = {
+                    "name": nombre_drive,
+                    "parents": [carpeta_entidad]
+                }
+
+            media = MediaFileUpload(
+                temp_path,
+                resumable=True
+            )
+
+            uploaded_file = (
+                drive_service.files()
+                .create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields="id, webViewLink",
+                    supportsAllDrives=True
                 )
-
-                # limpiar hoja
-                sheets_service.spreadsheets()\
-                    .values()\
-                    .clear(
-                        spreadsheetId=EXCEL_FILE_ID,
-                        range="HISTORIAL_DOCUMENTAL!A:G"
-                    ).execute()
-
-                # reescribir
-                values = [
-                    historial_actual.columns.tolist()
-                ] + historial_actual.values.tolist()
-
-                sheets_service.spreadsheets()\
-                    .values()\
-                    .update(
-                        spreadsheetId=EXCEL_FILE_ID,
-                        range="HISTORIAL_DOCUMENTAL!A1",
-                        valueInputOption="USER_ENTERED",
-                        body={
-                            "values": values
-                        }
-                    ).execute()
-
-                st.success(
-                    "♻ Documento anterior sustituido"
-                )
-
-            except Exception as e:
-
-                st.error(e)
-
-                st.stop()
-
-        st.info(
-            "Subiendo archivo..."
-        )
-
-        with tempfile.NamedTemporaryFile(
-            delete=False
-        ) as temp_file:
-
-            temp_file.write(
-                archivo.getbuffer()
+                .execute()
             )
 
-            temp_path = temp_file.name
+            file_id = uploaded_file["id"]
 
-            tipo_archivo = (
-                tipo
-                .replace(" ", "_")
+            drive_link = uploaded_file[
+                "webViewLink"
+            ]
+
+            os.remove(temp_path)
+
+            guardar_historial_sheets(
+                fecha=pd.Timestamp.now(),
+                entidad=entidad,
+                clues=clues,
+                tipo=tipo,
+                archivo=archivo.name,
+                link=drive_link,
+                file_id=file_id
             )
 
-            nombre_drive = (
-                f"{tipo_archivo}_{clues}_{archivo.name}"
+            st.cache_data.clear()
+
+            st.success(
+                "✅ Documento guardado correctamente"
             )
-
-            carpeta_entidad = (
-                obtener_carpeta_entidad(
-                    entidad
-                )
-            )
-
-            file_metadata = {
-                "name": nombre_drive,
-                "parents": [carpeta_entidad]
-            }
-
-        media = MediaFileUpload(
-            temp_path,
-            resumable=True
-        )
-
-        uploaded_file = (
-            drive_service.files()
-            .create(
-                body=file_metadata,
-                media_body=media,
-                fields="id, webViewLink",
-                supportsAllDrives=True
-            )
-            .execute()
-        )
-
-        file_id = uploaded_file["id"]
-
-        drive_link = uploaded_file[
-            "webViewLink"
-        ]
-
-        os.remove(temp_path)
-
-        guardar_historial_sheets(
-            fecha=pd.Timestamp.now(),
-            entidad=entidad,
-            clues=clues,
-            tipo=tipo,
-            archivo=archivo.name,
-            link=drive_link,
-            file_id=file_id
-        )
-
-        st.success(
-            "✅ Documento guardado correctamente"
-        )
-
-        st.link_button(
-            "📂 Abrir archivo",
-            drive_link
-        )
-
-# =========================
-# HISTORIAL
-# =========================
-
-st.markdown("---")
-
-st.markdown(
-    "## 📚 Historial documental"
-)
-
-try:
-
-    historial = descargar_historial()
-
-    for i, row in historial.iterrows():
-
-        c1, c2, c3, c4, c5, c6 = st.columns(
-            [2, 2, 2, 2, 1, 1]
-        )
-
-        with c1:
-            st.write(row["Fecha"])
-
-        with c2:
-            st.write(row["Entidad"])
-
-        with c3:
-            st.write(row["CLUES"])
-
-        with c4:
-            st.write(row["Tipo"])
-
-        with c5:
 
             st.link_button(
-                "👁",
-                row["Link"]
+                "📂 Abrir archivo",
+                drive_link
             )
 
-        with c6:
+    # =========================
+    # HISTORIAL
+    # =========================
 
-            if st.button(
-                "🗑",
-                key=f"delete_{i}"
-            ):
+    st.markdown("---")
 
-                borrar_archivo_drive(
+    st.markdown(
+        "## 📚 Historial documental"
+    )
+
+    try:
+
+        historial = descargar_historial()
+
+        for i, row in historial.iterrows():
+
+            c1, c2, c3, c4, c5, c6 = st.columns(
+                [2, 2, 2, 2, 1, 1]
+            )
+
+            with c1:
+                st.write(row["Fecha"])
+
+            with c2:
+                st.write(row["Entidad"])
+
+            with c3:
+                st.write(row["CLUES"])
+
+            with c4:
+                st.write(row["Tipo"])
+
+            with c5:
+
+                st.link_button(
+                    "👁",
                     row["Link"]
                 )
 
-                borrar_fila_historial(
-                    i + 1
-                )
+            with c6:
 
-                st.cache_data.clear()
+                if st.button(
+                    "🗑",
+                    key=f"delete_{i}"
+                ):
 
-                st.rerun()
+                    borrar_archivo_drive(
+                        row["Link"]
+                    )
 
-except Exception as e:
+                    borrar_fila_historial(
+                        i + 1
+                    )
 
-    st.error(e)
+                    st.cache_data.clear()
+
+                    st.rerun()
+
+    except Exception as e:
+
+        st.error(e)
