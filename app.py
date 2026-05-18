@@ -560,6 +560,10 @@ for entidad_nombre in sorted(
         historial_entidad["Tipo"]
         == "Tercer reiterativo"
     ].shape[0]
+    prorroga = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Prórroga"
+    ].shape[0]
 
     correo = historial_entidad[
         historial_entidad["Tipo"]
@@ -579,6 +583,8 @@ for entidad_nombre in sorted(
         "2do Reiterativo": reiterativo_2,
 
         "3er Reiterativo": reiterativo_3,
+
+        "Prórroga": prorroga,
 
         "Correo": correo
 
@@ -803,6 +809,7 @@ if modulo == "📚 Documental":
         [
             "Entrega",
             "Corrección",
+            "Prórroga",
             "Primer reiterativo",
             "Segundo reiterativo",
             "Tercer reiterativo",
