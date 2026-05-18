@@ -629,7 +629,6 @@ if modulo == "📚 Documental":
                 )
 
                 reemplazar = st.button("♻ Sustituir")
-                )
 
                 if not reemplazar:
 
@@ -664,20 +663,24 @@ if modulo == "📚 Documental":
                     )
 
                     # limpiar hoja
-                    sheets_service.spreadsheets()\
-                        .values()\
+                    (
+                        sheets_service.spreadsheets()
+                        .values()
                         .clear(
                             spreadsheetId=EXCEL_FILE_ID,
                             range="HISTORIAL_DOCUMENTAL!A:G"
-                        ).execute()
+                        )
+                        .execute()
+                    )
 
                     # reescribir
                     values = [
                         historial_actual.columns.tolist()
                     ] + historial_actual.values.tolist()
 
-                    sheets_service.spreadsheets()\
-                        .values()\
+                    (
+                        sheets_service.spreadsheets()
+                        .values()
                         .update(
                             spreadsheetId=EXCEL_FILE_ID,
                             range="HISTORIAL_DOCUMENTAL!A1",
@@ -685,7 +688,9 @@ if modulo == "📚 Documental":
                             body={
                                 "values": values
                             }
-                        ).execute()
+                        )
+                        .execute()
+                    )
 
                     st.success(
                         "♻ Documento anterior sustituido"
