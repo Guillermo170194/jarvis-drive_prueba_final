@@ -260,7 +260,8 @@ def guardar_historial_sheets(
         archivo,
         str(fecha_documento),
         link,
-        file_id
+        fi
+e_id
     ]]
     body = {
         "values": values
@@ -268,7 +269,7 @@ def guardar_historial_sheets(
 
     sheets_service.spreadsheets().values().append(
         spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:H"
+        range="HISTORIAL_DOCUMENTAL!A:H",
         valueInputOption="USER_ENTERED",
         body=body
     ).execute()
@@ -316,7 +317,7 @@ def borrar_fila_historial(row_number):
     # limpiar hoja
     sheets_service.spreadsheets().values().clear(
         spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:G"
+        range="HISTORIAL_DOCUMENTAL!A:H"
     ).execute()
 
     # volver a escribir
