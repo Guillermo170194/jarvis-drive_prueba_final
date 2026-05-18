@@ -480,6 +480,44 @@ no_entregados = base_operativa[
 ].shape[0]
 
 # =========================
+# LISTADOS OPERATIVOS
+# =========================
+
+df_correctos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "CORRECTO"
+    )
+]
+
+df_incorrectos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "INCORRECTO"
+    )
+]
+
+df_no_entregados = base_operativa[
+    base_operativa[
+        "CARPETA FÍSCA (Si/no)"
+    ] == "NO"
+]
+
+# =========================
 # KPIs DOCUMENTALES
 # =========================
 
@@ -735,44 +773,6 @@ if modulo == "🏠 Resumen nacional":
         )
 
 # =========================
-# LISTADOS OPERATIVOS
-# =========================
-
-df_correctos = base_operativa[
-    (
-        base_operativa[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        base_operativa[
-            "CORRECTO/INCORRECTO"
-        ] == "CORRECTO"
-    )
-]
-
-df_incorrectos = base_operativa[
-    (
-        base_operativa[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        base_operativa[
-            "CORRECTO/INCORRECTO"
-        ] == "INCORRECTO"
-    )
-]
-
-df_no_entregados = base_operativa[
-    base_operativa[
-        "CARPETA FÍSCA (Si/no)"
-    ] == "NO"
-]
-
-# =========================
 # CATÁLOGOS
 # =========================
 
@@ -868,6 +868,26 @@ if modulo == "🏛 Estado":
             "🔴 Reiterativos",
             reiterativos_estado
         )
+    st.markdown("---")
+
+    st.markdown(
+        f"## 📋 CLUES - {entidad_estado}"
+    )
+
+    tabla_estado = base_estado[
+        [
+            "CLUES",
+            "ALMACÉN",
+            "CORRECTO/INCORRECTO"
+        ]
+    ]
+
+    st.dataframe(
+        tabla_estado,
+        use_container_width=True,
+        hide_index=True,
+        height=500
+    )
 
 if modulo == "📚 Documental":
 
