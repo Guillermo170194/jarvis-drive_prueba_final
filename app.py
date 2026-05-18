@@ -570,6 +570,112 @@ if st.button("📤 Guardar documento"):
         )
 
     else:
+        # =========================
+        # VALIDAR DUPLICADOS
+        # =========================
+
+        historial_actual = descargar_historial()
+
+        existente = historial_actual[
+            (
+                historial_actual["CLUES"]
+                .astype(str)
+                == str(clues)
+            )
+            &
+            (
+                historial_actual["Tipo"]
+                .astype(str)
+                == str(tipo)
+            )
+        ]
+
+        if not existente.empty:
+
+            archivo_existente = (
+                existente.iloc[-1]
+            )
+
+            st.warning(
+                f"⚠ Ya existe un documento "
+                f"de tipo '{tipo}' "
+                f"para la CLUES {clues}"
+            )
+
+            st.info(
+                f"📄 Archivo actual: "
+                f"{archivo_existente['Archivo']}"
+            )
+
+            reemplazar = st.checkbox(
+                "Deseo sustituir el archivo existente"
+            )
+
+            if not reemplazar:
+
+                st.stop()
+
+            # =========================
+            # MANDAR A PAPELERA
+            # =========================
+
+            try:
+
+                drive_service.files().update(
+                    fileId=archivo_existente["File ID"],
+                    body={
+                        "trashed": True
+                    },
+                    supportsAllDrives=True
+                ).execute()
+
+                # =========================
+                # BORRAR REGISTRO HISTORIAL
+                # =========================
+
+                historial_actual = (
+                    historial_actual.drop(
+                        existente.index
+                    )
+                )
+
+                historial_actual = (
+                    historial_actual.fillna("")
+                )
+
+                # limpiar hoja
+                sheets_service.spreadsheets()\
+                    .values()\
+                    .clear(
+                        spreadsheetId=EXCEL_FILE_ID,
+                        range="HISTORIAL_DOCUMENTAL!A:G"
+                    ).execute()
+
+                # reescribir
+                values = [
+                    historial_actual.columns.tolist()
+                ] + historial_actual.values.tolist()
+
+                sheets_service.spreadsheets()\
+                    .values()\
+                    .update(
+                        spreadsheetId=EXCEL_FILE_ID,
+                        range="HISTORIAL_DOCUMENTAL!A1",
+                        valueInputOption="USER_ENTERED",
+                        body={
+                            "values": values
+                        }
+                    ).execute()
+
+                st.success(
+                    "♻ Documento anterior sustituido"
+                )
+
+            except Exception as e:
+
+                st.error(e)
+
+                st.stop()
 
         st.info(
             "Subiendo archivo..."
