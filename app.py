@@ -518,7 +518,7 @@ reiterativos = historial_docs[
 ].shape[0]
 
 # =========================
-# RESUMEN POR ENTIDAD
+# RESUMEN DOCUMENTAL
 # =========================
 
 resumen_entidad = []
@@ -530,62 +530,58 @@ for entidad_nombre in sorted(
     .unique()
 ):
 
-    base_entidad = base_operativa[
-        base_operativa["ENTIDAD"]
-        .astype(str)
-        == entidad_nombre
-    ]
-
     historial_entidad = historial_docs[
         historial_docs["Entidad"]
         .astype(str)
         == entidad_nombre
     ]
 
-    total_clues_entidad = (
-        base_entidad["CLUES"]
-        .astype(str)
-        .nunique()
-    )
-
-    clues_con_doc_entidad = (
-        historial_entidad["CLUES"]
-        .astype(str)
-        .nunique()
-    )
-
-    entregas_entidad = historial_entidad[
+    entrega = historial_entidad[
         historial_entidad["Tipo"]
-        .astype(str)
         == "Entrega"
     ].shape[0]
 
-    pendientes_entidad = (
-        total_clues_entidad
-        - clues_con_doc_entidad
-    )
+    correccion = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Corrección"
+    ].shape[0]
 
-    if total_clues_entidad > 0:
+    reiterativo_1 = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Primer reiterativo"
+    ].shape[0]
 
-        porcentaje = round(
-            (
-                clues_con_doc_entidad
-                / total_clues_entidad
-            ) * 100,
-            1
-        )
+    reiterativo_2 = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Segundo reiterativo"
+    ].shape[0]
 
-    else:
+    reiterativo_3 = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Tercer reiterativo"
+    ].shape[0]
 
-        porcentaje = 0
+    correo = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Correo"
+    ].shape[0]
 
     resumen_entidad.append({
+
         "Entidad": entidad_nombre,
-        "CLUES": total_clues_entidad,
-        "Docs": historial_entidad.shape[0],
-        "Entregas": entregas_entidad,
-        "Pendientes": pendientes_entidad,
-        "% Cumplimiento": porcentaje
+
+        "Entrega": entrega,
+
+        "Corrección": correccion,
+
+        "1er Reiterativo": reiterativo_1,
+
+        "2do Reiterativo": reiterativo_2,
+
+        "3er Reiterativo": reiterativo_3,
+
+        "Correo": correo
+
     })
 
 df_resumen_entidad = pd.DataFrame(
