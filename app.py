@@ -335,7 +335,62 @@ def borrar_fila_historial(row_number):
 # BUSCAR O CREAR CARPETA
 # =========================
 
+# =========================
+# CARPETA ENTIDAD
+# =========================
+
 def obtener_carpeta_entidad(entidad):
+
+    query = f"""
+    name = '{entidad}'
+    and mimeType = 'application/vnd.google-apps.folder'
+    and '{FOLDER_ID}' in parents
+    and trashed = false
+    """
+
+    resultados = (
+        drive_service.files()
+        .list(
+            q=query,
+            fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        )
+        .execute()
+    )
+
+    carpetas = resultados.get(
+        "files",
+        []
+    )
+
+    if carpetas:
+
+        return carpetas[0]["id"]
+
+    metadata = {
+        "name": entidad,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [FOLDER_ID]
+    }
+
+    carpeta = (
+        drive_service.files()
+        .create(
+            body=metadata,
+            fields="id",
+            supportsAllDrives=True
+        )
+        .execute()
+    )
+
+    return carpeta["id"]
+
+
+# =========================
+# CARPETA CLUES
+# =========================
+
 def obtener_carpeta_clues(
     entidad,
     clues
@@ -370,17 +425,9 @@ def obtener_carpeta_clues(
         []
     )
 
-    # =========================
-    # SI YA EXISTE
-    # =========================
-
     if carpetas:
 
         return carpetas[0]["id"]
-
-    # =========================
-    # SI NO EXISTE -> CREAR
-    # =========================
 
     metadata = {
         "name": str(clues),
@@ -400,58 +447,6 @@ def obtener_carpeta_clues(
 
     return carpeta["id"]
 
-    query = f"""
-    name = '{entidad}'
-    and mimeType = 'application/vnd.google-apps.folder'
-    and '{FOLDER_ID}' in parents
-    and trashed = false
-    """
-
-    resultados = (
-        drive_service.files()
-        .list(
-            q=query,
-            fields="files(id, name)",
-            supportsAllDrives=True,
-            includeItemsFromAllDrives=True
-        )
-        .execute()
-    )
-
-    carpetas = resultados.get(
-        "files",
-        []
-    )
-
-    # =========================
-    # SI YA EXISTE
-    # =========================
-
-    if carpetas:
-
-        return carpetas[0]["id"]
-
-    # =========================
-    # SI NO EXISTE -> CREAR
-    # =========================
-
-    metadata = {
-        "name": entidad,
-        "mimeType": "application/vnd.google-apps.folder",
-        "parents": [FOLDER_ID]
-    }
-
-    carpeta = (
-        drive_service.files()
-        .create(
-            body=metadata,
-            fields="id",
-            supportsAllDrives=True
-        )
-        .execute()
-    )
-
-    return carpeta["id"]
 # =========================
 # CARGAR BASES
 # =========================
