@@ -990,6 +990,48 @@ if modulo == "📚 Documental":
             "🏥 CLUES",
             sorted(clues_filtrados)
         )
+    almacen_clues = (
+        base_operativa[
+            base_operativa["CLUES"]
+            .astype(str)
+            == str(clues)
+        ]["ALMACÉN"]
+        .astype(str)
+        .iloc[0]
+    )
+
+    st.info(
+        f"🏬 ALMACÉN: {almacen_clues}"
+    )
+
+    historial_clues = historial_docs[
+        historial_docs["CLUES"]
+        .astype(str)
+        == str(clues)
+    ]
+
+    if historial_clues.empty:
+
+        st.warning(
+            "📭 Sin documentos registrados"
+        )
+
+    else:
+
+        tipos_documentales = (
+            historial_clues["Tipo"]
+            .astype(str)
+            .unique()
+        )
+
+        resumen_documental = ", ".join(
+            tipos_documentales
+        )
+
+        st.success(
+            f"📋 Documentos registrados: "
+            f"{resumen_documental}"
+        )
 
     tipo = st.selectbox(
         "📄 Tipo documental",
