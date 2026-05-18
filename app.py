@@ -336,6 +336,69 @@ def borrar_fila_historial(row_number):
 # =========================
 
 def obtener_carpeta_entidad(entidad):
+def obtener_carpeta_clues(
+    entidad,
+    clues
+):
+
+    carpeta_entidad = (
+        obtener_carpeta_entidad(
+            entidad
+        )
+    )
+
+    query = f"""
+    name = '{clues}'
+    and mimeType = 'application/vnd.google-apps.folder'
+    and '{carpeta_entidad}' in parents
+    and trashed = false
+    """
+
+    resultados = (
+        drive_service.files()
+        .list(
+            q=query,
+            fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        )
+        .execute()
+    )
+
+    carpetas = resultados.get(
+        "files",
+        []
+    )
+
+    # =========================
+    # SI YA EXISTE
+    # =========================
+
+    if carpetas:
+
+        return carpetas[0]["id"]
+
+    # =========================
+    # SI NO EXISTE -> CREAR
+    # =========================
+
+    metadata = {
+        "name": str(clues),
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [carpeta_entidad]
+    }
+
+    carpeta = (
+        drive_service.files()
+        .create(
+            body=metadata,
+            fields="id",
+            supportsAllDrives=True
+        )
+        .execute()
+    )
+
+    return carpeta["id"]
 
     query = f"""
     name = '{entidad}'
@@ -605,6 +668,10 @@ for entidad_nombre in sorted(
         historial_entidad["Tipo"]
         == "Tercer reiterativo"
     ].shape[0]
+    reiterativo_4 = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Cuarto reiterativo"
+    ].shape[0]
     prorroga = historial_entidad[
         historial_entidad["Tipo"]
         == "Prórroga"
@@ -630,6 +697,8 @@ for entidad_nombre in sorted(
         "2do Reiterativo": reiterativo_2,
 
         "3er Reiterativo": reiterativo_3,
+
+        "4to Reiterativo": reiterativo_4,
 
         "Prórroga": prorroga,
 
@@ -1045,6 +1114,7 @@ if modulo == "📚 Documental":
             "Primer reiterativo",
             "Segundo reiterativo",
             "Tercer reiterativo",
+            "Cuarto reiterativo",
             "Correo",
             "Otro"
         ]
@@ -1206,11 +1276,11 @@ if modulo == "📚 Documental":
                 )
 
                 carpeta_entidad = (
-                    obtener_carpeta_entidad(
-                        entidad
+                    obtener_carpeta_clues(
+                        entidad,
+                        clues
                     )
                 )
-
                 file_metadata = {
                     "name": nombre_drive,
                     "parents": [carpeta_entidad]
