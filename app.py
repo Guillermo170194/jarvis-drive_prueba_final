@@ -673,6 +673,104 @@ if modulo == "🏠 Resumen nacional":
         use_container_width=True,
         hide_index=True
     )
+    st.markdown("---")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+
+        st.markdown(
+            "## ✅ Correctos"
+        )
+
+        st.dataframe(
+            df_correctos[
+                [
+                    "ENTIDAD",
+                    "CLUES",
+                    "ALMACÉN"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            height=300
+        )
+
+    with c2:
+
+        st.markdown(
+            "## ❌ Incorrectos"
+        )
+
+        st.dataframe(
+            df_incorrectos[
+                [
+                    "ENTIDAD",
+                    "CLUES",
+                    "ALMACÉN"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            height=300
+        )
+
+    with c3:
+
+        st.markdown(
+            "## 📭 No entregados"
+        )
+
+        st.dataframe(
+            df_no_entregados[
+                [
+                    "ENTIDAD",
+                    "CLUES",
+                    "ALMACÉN"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True,
+            height=300
+        )
+
+# =========================
+# LISTADOS OPERATIVOS
+# =========================
+
+df_correctos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "CORRECTO"
+    )
+]
+
+df_incorrectos = base_operativa[
+    (
+        base_operativa[
+            "CARPETA FÍSCA (Si/no)"
+        ] == "SI"
+    )
+    &
+    (
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ] == "INCORRECTO"
+    )
+]
+
+df_no_entregados = base_operativa[
+    base_operativa[
+        "CARPETA FÍSCA (Si/no)"
+    ] == "NO"
+]
 
 # =========================
 # CATÁLOGOS
