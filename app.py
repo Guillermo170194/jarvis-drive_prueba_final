@@ -701,6 +701,8 @@ try:
 
                 st.cache_data.clear()
 
-                st.rerun()except Exception as e:
+                st.rerun()
+
+except Exception as e:
 
     st.error(e)
