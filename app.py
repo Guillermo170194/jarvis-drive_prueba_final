@@ -480,6 +480,44 @@ no_entregados = base_operativa[
 ].shape[0]
 
 # =========================
+# KPIs DOCUMENTALES
+# =========================
+
+historial_docs = descargar_historial()
+
+total_documentos = historial_docs.shape[0]
+
+clues_con_documento = (
+    historial_docs["CLUES"]
+    .astype(str)
+    .nunique()
+)
+
+total_clues = (
+    base_operativa["CLUES"]
+    .astype(str)
+    .nunique()
+)
+
+clues_pendientes = (
+    total_clues - clues_con_documento
+)
+
+entregas = historial_docs[
+    historial_docs["Tipo"] == "Entrega"
+].shape[0]
+
+reiterativos = historial_docs[
+    historial_docs["Tipo"]
+    .astype(str)
+    .str.contains(
+        "reiterativo",
+        case=False,
+        na=False
+    )
+].shape[0]
+
+# =========================
 # KPIs VISUALES
 # =========================
 
@@ -508,6 +546,44 @@ if modulo == "🏠 Resumen nacional":
         st.metric(
             "📭 No entregados",
             no_entregados
+        )
+    st.markdown("---")
+
+    d1, d2, d3, d4, d5 = st.columns(5)
+
+    with d1:
+
+        st.metric(
+            "📄 Documentos",
+            total_documentos
+        )
+
+    with d2:
+
+        st.metric(
+            "🏥 CLUES con docs",
+            clues_con_documento
+        )
+
+    with d3:
+
+        st.metric(
+            "📭 Pendientes",
+            clues_pendientes
+        )
+
+    with d4:
+
+        st.metric(
+            "✅ Entregas",
+            entregas
+        )
+
+    with d5:
+
+        st.metric(
+            "♻ Reiterativos",
+            reiterativos
         )
 
 # =========================
