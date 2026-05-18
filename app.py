@@ -261,7 +261,7 @@ def guardar_historial_sheets(
         str(fecha_documento),
         link,
         fi
-e_id
+        e_id
     ]]
     body = {
         "values": values
@@ -1149,7 +1149,7 @@ if modulo == "📚 Documental":
                         .values()
                         .clear(
                             spreadsheetId=EXCEL_FILE_ID,
-                            range="HISTORIAL_DOCUMENTAL!A:G"
+                            range="HISTORIAL_DOCUMENTAL!A:H"
                         )
                         .execute()
                     )
