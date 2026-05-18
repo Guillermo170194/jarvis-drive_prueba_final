@@ -1570,6 +1570,21 @@ if modulo == "📦 Inventarios":
     st.info(
         f"🏬 ALMACÉN: {almacen_inv}"
     )
+    try:
+
+        historial_inv = (
+            descargar_inventarios()
+        )
+
+    except:
+
+        historial_inv = pd.DataFrame()
+
+    inventarios_clues = historial_inv[
+        historial_inv["CLUES"]
+        .astype(str)
+        == str(clues_inv)
+    ]
     st.markdown(
         "## 📦 Evidencias inventario"
     )
@@ -1578,91 +1593,350 @@ if modulo == "📦 Inventarios":
     # INVENTARIO FÍSICO
     # =========================
 
-    inventario_fisico = st.checkbox(
-        "☑ Inventario físico recibido"
+    evidencia_existente = (
+        inventarios_clues[
+            inventarios_clues["Tipo"]
+            .astype(str)
+            == "Evidencia física"
+        ]
     )
+
+    if not evidencia_existente.empty:
+
+        actual_evidencia = (
+            evidencia_existente.iloc[-1]
+        )
+
+        st.success(
+            "✅ Evidencia física cargada"
+        )
+
+        st.info(
+            f"📷 "
+            f"{actual_evidencia['Archivo']}"
+        )
+
+        st.link_button(
+            "👁 Abrir actual",
+            actual_evidencia["Link"],
+            key="abrir_evidencia"
+        )
+
+    else:
+
+        st.warning(
+            "❌ Sin evidencia física"
+        )
 
     evidencia_fisica = None
 
-    if inventario_fisico:
+    if not evidencia_existente.empty:
 
-        evidencia_fisica = st.file_uploader(
-            "📷 Evidencia física",
-            type=["jpg", "jpeg", "png", "pdf"],
-            key="evidencia_fisica"
+        reemplazar_evidencia = st.checkbox(
+            "♻ Sustituir evidencia física"
         )
+
+        if reemplazar_evidencia:
+
+            inventario_fisico = True
+
+            evidencia_fisica = st.file_uploader(
+                "📷 Nueva evidencia física",
+                type=["jpg", "jpeg", "png", "pdf"],
+                key="nueva_evidencia"
+            )
+
+        else:
+
+            inventario_fisico = False
+
+    else:
+
+        inventario_fisico = st.checkbox(
+            "☑ Inventario físico recibido"
+        )
+
+        if inventario_fisico:
+
+            evidencia_fisica = st.file_uploader(
+                "📷 Evidencia física",
+                type=["jpg", "jpeg", "png", "pdf"],
+                key="evidencia_fisica"
+            )
 
     # =========================
     # ACTA INICIO
     # =========================
 
-    acta_inicio = st.checkbox(
-        "☑ Acta de inicio"
+    acta_inicio_existente = (
+        inventarios_clues[
+            inventarios_clues["Tipo"]
+            .astype(str)
+            == "Acta de inicio"
+        ]
     )
+
+    if not acta_inicio_existente.empty:
+
+        actual_inicio = (
+            acta_inicio_existente.iloc[-1]
+        )
+
+        st.success(
+            "✅ Acta de inicio cargada"
+        )
+
+        st.info(
+            f"📄 "
+            f"{actual_inicio['Archivo']}"
+        )
+
+        st.link_button(
+            "👁 Abrir actual",
+            actual_inicio["Link"],
+            key="abrir_inicio"
+        )
+
+    else:
+
+        st.warning(
+            "❌ Sin acta de inicio"
+        )
 
     archivo_acta_inicio = None
 
-    if acta_inicio:
+    if not acta_inicio_existente.empty:
 
-        archivo_acta_inicio = st.file_uploader(
-            "📄 PDF acta inicio",
-            type=["pdf"],
-            key="acta_inicio"
+        reemplazar_inicio = st.checkbox(
+            "♻ Sustituir acta inicio"
         )
 
+        if reemplazar_inicio:
+
+            archivo_acta_inicio = st.file_uploader(
+                "📄 Nuevo PDF acta inicio",
+                type=["pdf"],
+                key="nuevo_inicio"
+            )
+
+    else:
+
+        acta_inicio = st.checkbox(
+            "☑ Acta de inicio"
+        )
+
+        if acta_inicio:
+
+            archivo_acta_inicio = st.file_uploader(
+                "📄 PDF acta inicio",
+                type=["pdf"],
+                key="acta_inicio"
+            )
     # =========================
     # ACTA CONCLUSIÓN
     # =========================
 
-    acta_conclusion = st.checkbox(
-        "☑ Acta de conclusión"
+    acta_conclusion_existente = (
+        inventarios_clues[
+            inventarios_clues["Tipo"]
+            .astype(str)
+            == "Acta de conclusión"
+        ]
     )
 
+    if not acta_conclusion_existente.empty:
+
+        actual_conclusion = (
+            acta_conclusion_existente.iloc[-1]
+        )
+
+        st.success(
+            "✅ Acta de conclusión cargada"
+        )
+
+        st.info(
+            f"📄 "
+            f"{actual_conclusion['Archivo']}"
+        )
+
+        st.link_button(
+            "👁 Abrir actual",
+            actual_conclusion["Link"],
+            key="abrir_conclusion"
+        )
+
+    else:
+
+        st.warning(
+            "❌ Sin acta de conclusión"
+        )
     archivo_acta_conclusion = None
 
-    if acta_conclusion:
+    if not acta_conclusion_existente.empty:
 
-        archivo_acta_conclusion = st.file_uploader(
-            "📄 PDF acta conclusión",
-            type=["pdf"],
-            key="acta_conclusion"
+        reemplazar_conclusion = st.checkbox(
+            "♻ Sustituir acta conclusión"
         )
+
+        if reemplazar_conclusion:
+
+            archivo_acta_conclusion = st.file_uploader(
+                "📄 Nuevo PDF acta conclusión",
+                type=["pdf"],
+                key="nuevo_conclusion"
+            )
+
+    else:
+
+        acta_conclusion = st.checkbox(
+            "☑ Acta de conclusión"
+        )
+
+        if acta_conclusion:
+
+            archivo_acta_conclusion = st.file_uploader(
+                "📄 PDF acta conclusión",
+                type=["pdf"],
+                key="acta_conclusion"
+            )
 
     # =========================
     # INVENTARIO PDF
     # =========================
 
-    inventario_pdf = st.checkbox(
-        "☑ Inventario PDF"
+    inventario_pdf_existente = (
+        inventarios_clues[
+            inventarios_clues["Tipo"]
+            .astype(str)
+            == "Inventario PDF"
+        ]
     )
+
+    if not inventario_pdf_existente.empty:
+
+        actual_pdf = (
+            inventario_pdf_existente.iloc[-1]
+        )
+
+        st.success(
+            "✅ Inventario PDF cargado"
+        )
+
+        st.info(
+            f"📄 "
+            f"{actual_pdf['Archivo']}"
+        )
+
+        st.link_button(
+            "👁 Abrir actual",
+            actual_pdf["Link"],
+            key="abrir_pdf"
+        )
+
+    else:
+
+        st.warning(
+            "❌ Sin inventario PDF"
+        )
 
     archivo_inventario_pdf = None
 
-    if inventario_pdf:
+    if not inventario_pdf_existente.empty:
 
-        archivo_inventario_pdf = st.file_uploader(
-            "📄 Archivo inventario PDF",
-            type=["pdf"],
-            key="inventario_pdf"
+        reemplazar_pdf = st.checkbox(
+            "♻ Sustituir inventario PDF"
         )
+
+        if reemplazar_pdf:
+
+            archivo_inventario_pdf = st.file_uploader(
+                "📄 Nuevo inventario PDF",
+                type=["pdf"],
+                key="nuevo_pdf"
+            )
+
+    else:
+
+        inventario_pdf = st.checkbox(
+            "☑ Inventario PDF"
+        )
+
+        if inventario_pdf:
+
+            archivo_inventario_pdf = st.file_uploader(
+                "📄 Archivo inventario PDF",
+                type=["pdf"],
+                key="inventario_pdf"
+            )
 
     # =========================
     # INVENTARIO EXCEL
     # =========================
 
-    inventario_excel = st.checkbox(
-        "☑ Inventario Excel"
+    inventario_excel_existente = (
+        inventarios_clues[
+            inventarios_clues["Tipo"]
+            .astype(str)
+            == "Inventario Excel"
+        ]
     )
+
+    if not inventario_excel_existente.empty:
+
+        actual_excel = (
+            inventario_excel_existente.iloc[-1]
+        )
+
+        st.success(
+            "✅ Inventario Excel cargado"
+        )
+
+        st.info(
+            f"📊 "
+            f"{actual_excel['Archivo']}"
+        )
+
+        st.link_button(
+            "👁 Abrir actual",
+            actual_excel["Link"],
+            key="abrir_excel"
+        )
+
+    else:
+
+        st.warning(
+            "❌ Sin inventario Excel"
+        )
 
     archivo_inventario_excel = None
 
-    if inventario_excel:
+    if not inventario_excel_existente.empty:
 
-        archivo_inventario_excel = st.file_uploader(
-            "📊 Archivo inventario Excel",
-            type=["xlsx", "xls"],
-            key="inventario_excel"
+        reemplazar_excel = st.checkbox(
+            "♻ Sustituir inventario Excel"
         )
+
+        if reemplazar_excel:
+
+            archivo_inventario_excel = st.file_uploader(
+                "📊 Nuevo inventario Excel",
+                type=["xlsx", "xls"],
+                key="nuevo_excel"
+            )
+
+    else:
+
+        inventario_excel = st.checkbox(
+            "☑ Inventario Excel"
+        )
+
+        if inventario_excel:
+
+            archivo_inventario_excel = st.file_uploader(
+                "📊 Archivo inventario Excel",
+                type=["xlsx", "xls"],
+                key="inventario_excel"
+            )
 
     if st.button("📤 Guardar inventario"):
         archivos_subidos = []
@@ -1751,30 +2025,6 @@ if modulo == "📦 Inventarios":
                         existente.iloc[-1]
                     )
 
-                    st.warning(
-                        f"⚠ Ya existe "
-                        f"{tipo_archivo}"
-                    )
-
-                    st.info(
-                        f"📄 Archivo actual: "
-                        f"{archivo_existente['Archivo']}"
-                    )
-
-                    st.link_button(
-                        "👁 Abrir actual",
-                        archivo_existente["Link"]
-                    )
-
-                    reemplazar = st.checkbox(
-                        f"♻ Sustituir {tipo_archivo}",
-                        key=f"{tipo_archivo}_{clues_inv}"
-                    )
-
-                    if not reemplazar:
-
-                        continue
-
                     try:
 
                         drive_service.files().update(
@@ -1790,7 +2040,6 @@ if modulo == "📦 Inventarios":
                         st.error(e)
 
                         continue
-
                 with tempfile.NamedTemporaryFile(
                     delete=False
                 ) as temp_file:
