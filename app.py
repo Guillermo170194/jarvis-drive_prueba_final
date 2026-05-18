@@ -518,6 +518,81 @@ reiterativos = historial_docs[
 ].shape[0]
 
 # =========================
+# RESUMEN POR ENTIDAD
+# =========================
+
+resumen_entidad = []
+
+for entidad_nombre in sorted(
+    base_operativa["ENTIDAD"]
+    .dropna()
+    .astype(str)
+    .unique()
+):
+
+    base_entidad = base_operativa[
+        base_operativa["ENTIDAD"]
+        .astype(str)
+        == entidad_nombre
+    ]
+
+    historial_entidad = historial_docs[
+        historial_docs["Entidad"]
+        .astype(str)
+        == entidad_nombre
+    ]
+
+    total_clues_entidad = (
+        base_entidad["CLUES"]
+        .astype(str)
+        .nunique()
+    )
+
+    clues_con_doc_entidad = (
+        historial_entidad["CLUES"]
+        .astype(str)
+        .nunique()
+    )
+
+    entregas_entidad = historial_entidad[
+        historial_entidad["Tipo"]
+        .astype(str)
+        == "Entrega"
+    ].shape[0]
+
+    pendientes_entidad = (
+        total_clues_entidad
+        - clues_con_doc_entidad
+    )
+
+    if total_clues_entidad > 0:
+
+        porcentaje = round(
+            (
+                clues_con_doc_entidad
+                / total_clues_entidad
+            ) * 100,
+            1
+        )
+
+    else:
+
+        porcentaje = 0
+
+    resumen_entidad.append({
+        "Entidad": entidad_nombre,
+        "CLUES": total_clues_entidad,
+        "Docs": historial_entidad.shape[0],
+        "Entregas": entregas_entidad,
+        "Pendientes": pendientes_entidad,
+        "% Cumplimiento": porcentaje
+    })
+
+df_resumen_entidad = pd.DataFrame(
+    resumen_entidad
+)
+
+# =========================
 # KPIs VISUALES
 # =========================
 
@@ -585,6 +660,20 @@ if modulo == "🏠 Resumen nacional":
             "♻ Reiterativos",
             reiterativos
         )
+    st.markdown("---")
+
+    st.markdown(
+        "## 📊 Resumen nacional por entidad"
+    )
+
+    st.dataframe(
+        df_resumen_entidad.sort_values(
+            "% Cumplimiento",
+            ascending=False
+        ),
+        use_container_width=True,
+        hide_index=True
+    )
 
 # =========================
 # CATÁLOGOS
