@@ -260,9 +260,9 @@ def guardar_historial_sheets(
         archivo,
         str(fecha_documento),
         link,
-        fi
-        e_id
+        file_id
     ]]
+
     body = {
         "values": values
     }
@@ -273,7 +273,6 @@ def guardar_historial_sheets(
         valueInputOption="USER_ENTERED",
         body=body
     ).execute()
-
 
 # =========================
 # BORRAR ARCHIVO DRIVE
