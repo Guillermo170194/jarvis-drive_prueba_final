@@ -685,6 +685,86 @@ entidades = sorted(
 # DOCUMENTAL
 # =========================
 
+# =========================
+# ESTADO
+# =========================
+
+if modulo == "🏛 Estado":
+
+    st.markdown("---")
+
+    entidad_estado = st.selectbox(
+        "🏛 Selecciona entidad",
+        entidades
+    )
+    base_estado = base_operativa[
+        base_operativa["ENTIDAD"]
+        .astype(str)
+        == entidad_estado
+    ]
+
+    historial_estado = historial_docs[
+        historial_docs["Entidad"]
+        .astype(str)
+        == entidad_estado
+    ]
+    total_clues_estado = (
+        base_estado["CLUES"]
+        .astype(str)
+        .nunique()
+    )
+
+    entregas_estado = historial_estado[
+        historial_estado["Tipo"]
+        == "Entrega"
+    ].shape[0]
+
+    correcciones_estado = historial_estado[
+        historial_estado["Tipo"]
+        == "Corrección"
+    ].shape[0]
+
+    reiterativos_estado = historial_estado[
+        historial_estado["Tipo"]
+        .astype(str)
+        .str.contains(
+            "reiterativo",
+            case=False,
+            na=False
+        )
+    ].shape[0]
+    st.markdown("---")
+
+    e1, e2, e3, e4 = st.columns(4)
+
+    with e1:
+
+        st.metric(
+            "🏥 CLUES",
+            total_clues_estado
+        )
+
+    with e2:
+
+        st.metric(
+            "✅ Entregas",
+            entregas_estado
+        )
+
+    with e3:
+
+        st.metric(
+            "🟡 Correcciones",
+            correcciones_estado
+        )
+
+    with e4:
+
+        st.metric(
+            "🔴 Reiterativos",
+            reiterativos_estado
+        )
+
 if modulo == "📚 Documental":
 
     # =========================
