@@ -235,7 +235,8 @@ def guardar_historial_sheets(
     clues,
     tipo,
     archivo,
-    link
+    link,
+    file_id
 ):
 
     values = [[
@@ -244,16 +245,16 @@ def guardar_historial_sheets(
         clues,
         tipo,
         archivo,
-        link
+        link,
+        file_id
     ]]
-
     body = {
         "values": values
     }
 
     sheets_service.spreadsheets().values().append(
         spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:F",
+        range="HISTORIAL_DOCUMENTAL!A:G",
         valueInputOption="USER_ENTERED",
         body=body
     ).execute()
@@ -609,6 +610,8 @@ if st.button("📤 Guardar documento"):
             .execute()
         )
 
+        file_id = uploaded_file["id"]
+
         drive_link = uploaded_file[
             "webViewLink"
         ]
@@ -621,7 +624,8 @@ if st.button("📤 Guardar documento"):
             clues=clues,
             tipo=tipo,
             archivo=archivo.name,
-            link=drive_link
+            link=drive_link,
+            file_id=file_id
         )
 
         st.success(
@@ -679,21 +683,18 @@ try:
                 key=f"delete_{i}"
             ):
 
-                borrar_archivo_drive(
-                    row["Link"]
-                )
-
-                st.write(
-                    row["Link"]
-                )
+                drive_service.files().delete(
+                    fileId=row["file_id"],
+                    supportsAllDrives=True
+                ).execute()
 
                 borrar_fila_historial(
                     i + 1
                 )
+
                 st.cache_data.clear()
 
                 st.rerun()
-
 except:
 
     st.warning(
