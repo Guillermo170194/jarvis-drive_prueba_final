@@ -705,6 +705,6 @@ try:
                 st.cache_data.clear()
 
                 st.rerun()
-    st.warning(
-        "No se pudo cargar historial"
-    )
+except Exception as e:
+
+    st.error(e)
