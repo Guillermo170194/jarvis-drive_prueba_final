@@ -691,6 +691,8 @@ try:
                 key=f"delete_{i}"
             ):
 
+                st.write(row)
+
                 drive_service.files().delete(
                     fileId=row["file_id"],
                     supportsAllDrives=True
@@ -703,8 +705,6 @@ try:
                 st.cache_data.clear()
 
                 st.rerun()
-except:
-
     st.warning(
         "No se pudo cargar historial"
     )
