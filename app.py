@@ -288,23 +288,33 @@ def borrar_archivo_drive(link):
 
 def borrar_fila_historial(row_number):
 
-    sheets_service.spreadsheets().batchUpdate(
-        spreadsheetId=EXCEL_FILE_ID,
-        body={
-            "requests": [
-                {
-                    "deleteDimension": {
-                        "range": {
-                            "sheetId": 1,
-                            "dimension": "ROWS",
-                            "startIndex": row_number,
-                            "endIndex": row_number + 1
-                        }
-                    }
-                }
-            ]
-        }
+    historial = descargar_historial()
+
+    historial = historial.drop(
+        historial.index[row_number - 1]
+    )
+
+    historial.to_excel(
+        "temp_historial.xlsx",
+        index=False
+    )
+
+    media = MediaFileUpload(
+        "temp_historial.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-"
+            "officedocument.spreadsheetml.sheet"
+        )
+    )
+
+    drive_service.files().update(
+        fileId=EXCEL_FILE_ID,
+        media_body=media
     ).execute()
+
+    os.remove(
+        "temp_historial.xlsx"
+    )
 
 # =========================
 # BUSCAR O CREAR CARPETA
