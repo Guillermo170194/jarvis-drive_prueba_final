@@ -247,6 +247,7 @@ def guardar_historial_sheets(
     clues,
     tipo,
     archivo,
+    fecha_documento,
     link,
     file_id
 ):
@@ -257,6 +258,7 @@ def guardar_historial_sheets(
         clues,
         tipo,
         archivo,
+        str(fecha_documento),
         link,
         file_id
     ]]
@@ -266,7 +268,7 @@ def guardar_historial_sheets(
 
     sheets_service.spreadsheets().values().append(
         spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:G",
+        range="HISTORIAL_DOCUMENTAL!A:H"
         valueInputOption="USER_ENTERED",
         body=body
     ).execute()
@@ -1051,6 +1053,9 @@ if modulo == "📚 Documental":
     archivo = st.file_uploader(
         "📎 Subir archivo"
     )
+    fecha_oficio = st.date_input(
+        "📅 Fecha del oficio / recepción"
+    )
 
     # =========================
     # GUARDAR DOCUMENTO
@@ -1241,6 +1246,7 @@ if modulo == "📚 Documental":
                 clues=clues,
                 tipo=tipo,
                 archivo=archivo.name,
+                fecha_documento=fecha_oficio,
                 link=drive_link,
                 file_id=file_id
             )
