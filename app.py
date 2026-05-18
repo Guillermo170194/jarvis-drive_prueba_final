@@ -579,6 +579,11 @@ for entidad_nombre in sorted(
         == "Entrega"
     ].shape[0]
 
+    entrega_uas = historial_entidad[
+        historial_entidad["Tipo"]
+        == "Entrega UAS Y OIC"
+    ].shape[0]
+
     correccion = historial_entidad[
         historial_entidad["Tipo"]
         == "Corrección"
@@ -613,6 +618,8 @@ for entidad_nombre in sorted(
         "Entidad": entidad_nombre,
 
         "Entrega": entrega,
+
+        "Entrega UAS Y OIC": entrega_uas,
 
         "Corrección": correccion,
 
@@ -990,6 +997,7 @@ if modulo == "📚 Documental":
             "Entrega",
             "Corrección",
             "Prórroga",
+            "Entrega UAS Y OIC",
             "Primer reiterativo",
             "Segundo reiterativo",
             "Tercer reiterativo",
