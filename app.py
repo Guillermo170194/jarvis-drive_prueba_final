@@ -691,12 +691,9 @@ try:
                 key=f"delete_{i}"
             ):
 
-                st.write(row)
-
-                drive_service.files().delete(
-                    fileId=row["file_id"],
-                    supportsAllDrives=True
-                ).execute()
+                borrar_archivo_drive(
+                    row["Link"]
+                )
 
                 borrar_fila_historial(
                     i + 1
@@ -704,7 +701,6 @@ try:
 
                 st.cache_data.clear()
 
-                st.rerun()
-except Exception as e:
+                st.rerun()except Exception as e:
 
     st.error(e)
