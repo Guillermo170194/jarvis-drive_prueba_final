@@ -57,7 +57,8 @@ modulo = st.sidebar.radio(
     [
         "🏠 Resumen nacional",
         "🏛 Estado",
-        "📚 Documental"
+        "📚 Documental",
+        "📦 Inventarios"
     ]
 )
 
@@ -125,10 +126,13 @@ def descargar_base_operativa():
 
     request = (
         drive_service.files()
-.export_media(
-    fileId=EXCEL_FILE_ID,
-    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+        .export_media(
+            fileId=EXCEL_FILE_ID,
+            mimeType=(
+                "application/vnd.openxmlformats-"
+                "officedocument.spreadsheetml.sheet"
+            )
+        )
     )
 
     archivo = io.BytesIO()
@@ -157,10 +161,13 @@ def descargar_historial():
 
     request = (
         drive_service.files()
-.export_media(
-    fileId=EXCEL_FILE_ID,
-    mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+        .export_media(
+            fileId=EXCEL_FILE_ID,
+            mimeType=(
+                "application/vnd.openxmlformats-"
+                "officedocument.spreadsheetml.sheet"
+            )
+        )
     )
 
     archivo = io.BytesIO()
@@ -183,6 +190,40 @@ def descargar_historial():
         sheet_name="HISTORIAL_DOCUMENTAL"
     )
 
+
+@st.cache_data(ttl=30)
+def descargar_inventarios():
+
+    request = (
+        drive_service.files()
+        .export_media(
+            fileId=EXCEL_FILE_ID,
+            mimeType=(
+                "application/vnd.openxmlformats-"
+                "officedocument.spreadsheetml.sheet"
+            )
+        )
+    )
+
+    archivo = io.BytesIO()
+
+    downloader = MediaIoBaseDownload(
+        archivo,
+        request
+    )
+
+    done = False
+
+    while done is False:
+
+        status, done = downloader.next_chunk()
+
+    archivo.seek(0)
+
+    return pd.read_excel(
+        archivo,
+        sheet_name="INVENTARIOS"
+    )
 # =========================
 # ACTUALIZAR EXCEL
 # =========================
@@ -270,6 +311,39 @@ def guardar_historial_sheets(
     sheets_service.spreadsheets().values().append(
         spreadsheetId=EXCEL_FILE_ID,
         range="HISTORIAL_DOCUMENTAL!A:H",
+        valueInputOption="USER_ENTERED",
+        body=body
+    ).execute()
+
+def guardar_inventario_sheets(
+    fecha,
+    entidad,
+    clues,
+    tipo,
+    archivo,
+    inventario_fisico,
+    link,
+    file_id
+):
+
+    values = [[
+        str(fecha),
+        entidad,
+        clues,
+        tipo,
+        archivo,
+        inventario_fisico,
+        link,
+        file_id
+    ]]
+
+    body = {
+        "values": values
+    }
+
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=EXCEL_FILE_ID,
+        range="INVENTARIOS!A:H",
         valueInputOption="USER_ENTERED",
         body=body
     ).execute()
@@ -433,6 +507,67 @@ def obtener_carpeta_clues(
         "name": str(clues),
         "mimeType": "application/vnd.google-apps.folder",
         "parents": [carpeta_entidad]
+    }
+
+    carpeta = (
+        drive_service.files()
+        .create(
+            body=metadata,
+            fields="id",
+            supportsAllDrives=True
+        )
+        .execute()
+    )
+
+    return carpeta["id"]
+# =========================
+# CARPETA INVENTARIOS
+# =========================
+
+def obtener_carpeta_inventarios(
+    entidad,
+    clues
+):
+
+    carpeta_clues = (
+        obtener_carpeta_clues(
+            entidad,
+            clues
+        )
+    )
+
+    query = f"""
+    name = 'INVENTARIOS'
+    and mimeType = 'application/vnd.google-apps.folder'
+    and '{carpeta_clues}' in parents
+    and trashed = false
+    """
+
+    resultados = (
+        drive_service.files()
+        .list(
+            q=query,
+            fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        )
+        .execute()
+    )
+
+    carpetas = resultados.get(
+        "files",
+        []
+    )
+
+    if carpetas:
+
+        return carpetas[0]["id"]
+
+    metadata = {
+        "name": "INVENTARIOS",
+        "mimeType":
+            "application/vnd.google-apps.folder",
+        "parents": [carpeta_clues]
     }
 
     carpeta = (
@@ -1318,7 +1453,6 @@ if modulo == "📚 Documental":
                 link=drive_link,
                 file_id=file_id
             )
-
             st.cache_data.clear()
 
             st.success(
@@ -1391,3 +1525,145 @@ if modulo == "📚 Documental":
     except Exception as e:
 
         st.error(e)
+# =========================
+# INVENTARIOS
+# =========================
+
+if modulo == "📦 Inventarios":
+
+    st.markdown("---")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        entidad_inv = st.selectbox(
+            "📍 Entidad inventario",
+            entidades
+        )
+
+    with c2:
+
+        clues_inv = st.selectbox(
+            "🏥 CLUES inventario",
+            sorted(
+                base_operativa[
+                    base_operativa["ENTIDAD"]
+                    == entidad_inv
+                ]["CLUES"]
+                .dropna()
+                .astype(str)
+                .unique()
+            )
+        )
+
+    almacen_inv = (
+        base_operativa[
+            base_operativa["CLUES"]
+            .astype(str)
+            == str(clues_inv)
+        ]["ALMACÉN"]
+        .astype(str)
+        .iloc[0]
+    )
+
+    st.info(
+        f"🏬 ALMACÉN: {almacen_inv}"
+    )
+
+    tipo_inv = st.selectbox(
+        "📦 Tipo inventario",
+        [
+            "Acta de inventario",
+            "Resultado inventario",
+            "Conciliación",
+            "Evidencia física",
+            "Otro"
+        ]
+    )
+
+    inventario_fisico = st.checkbox(
+        "☑ Inventario físico recibido"
+    )
+
+    archivo_inv = st.file_uploader(
+        "📎 Subir archivo inventario"
+    )
+
+    if st.button("📤 Guardar inventario"):
+
+        if not archivo_inv:
+
+            st.warning(
+                "⚠ Debes subir archivo"
+            )
+
+        else:
+
+            with tempfile.NamedTemporaryFile(
+                delete=False
+            ) as temp_file:
+
+                temp_file.write(
+                    archivo_inv.getbuffer()
+                )
+
+                temp_path = temp_file.name
+
+            folder_id = (
+                obtener_carpeta_inventarios(
+                    entidad_inv,
+                    clues_inv
+                )
+            )
+            
+            file_metadata = {
+                "name": archivo_inv.name,
+                "parents": [folder_id]
+            }
+
+            media = MediaFileUpload(
+                temp_path,
+                resumable=True
+            )
+
+            uploaded_file = (
+                drive_service.files()
+                .create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields="id, webViewLink",
+                    supportsAllDrives=True
+                )
+                .execute()
+            )
+
+            os.remove(temp_path)
+
+            guardar_inventario_sheets(
+                fecha=pd.Timestamp.now(),
+                entidad=entidad_inv,
+                clues=clues_inv,
+                tipo=tipo_inv,
+                archivo=archivo_inv.name,
+                inventario_fisico=(
+                    "SI"
+                    if inventario_fisico
+                    else "NO"
+                ),
+                link=uploaded_file[
+                    "webViewLink"
+                ],
+                file_id=uploaded_file["id"]
+            )
+
+            st.success(
+                "✅ Inventario guardado"
+            )
+
+            st.link_button(
+                "📂 Abrir archivo",
+                uploaded_file[
+                    "webViewLink"
+                ]
+            )
