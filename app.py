@@ -294,27 +294,25 @@ def borrar_fila_historial(row_number):
         historial.index[row_number - 1]
     )
 
-    historial.to_excel(
-        "temp_historial.xlsx",
-        index=False
-    )
+    historial = historial.fillna("")
 
-    media = MediaFileUpload(
-        "temp_historial.xlsx",
-        mimetype=(
-            "application/vnd.openxmlformats-"
-            "officedocument.spreadsheetml.sheet"
-        )
-    )
-
-    drive_service.files().update(
-        fileId=EXCEL_FILE_ID,
-        media_body=media
+    # limpiar hoja
+    sheets_service.spreadsheets().values().clear(
+        spreadsheetId=EXCEL_FILE_ID,
+        range="HISTORIAL_DOCUMENTAL!A:G"
     ).execute()
 
-    os.remove(
-        "temp_historial.xlsx"
-    )
+    # volver a escribir
+    values = [historial.columns.tolist()] + historial.values.tolist()
+
+    sheets_service.spreadsheets().values().update(
+        spreadsheetId=EXCEL_FILE_ID,
+        range="HISTORIAL_DOCUMENTAL!A1",
+        valueInputOption="USER_ENTERED",
+        body={
+            "values": values
+        }
+    ).execute()
 
 # =========================
 # BUSCAR O CREAR CARPETA
