@@ -873,6 +873,18 @@ if modulo == "🏛 Estado":
     st.markdown(
         f"## 📋 CLUES - {entidad_estado}"
     )
+    resumen_docs = (
+        historial_estado
+        .groupby("CLUES")["Tipo"]
+        .apply(
+            lambda x: ", ".join(
+                sorted(
+                    x.astype(str).unique()
+                )
+            )
+        )
+        .reset_index()
+    )
 
     tabla_estado = base_estado[
         [
@@ -882,12 +894,62 @@ if modulo == "🏛 Estado":
         ]
     ]
 
+    tabla_estado = tabla_estado.merge(
+        resumen_docs,
+        on="CLUES",
+        how="left"
+    )
+
+    tabla_estado = tabla_estado.rename(
+        columns={
+            "Tipo": "DOCUMENTOS"
+        }
+    )
+
+    tabla_estado = tabla_estado.fillna(
+        "Sin documentos"
+    )
     st.dataframe(
         tabla_estado,
         use_container_width=True,
         hide_index=True,
         height=500
     )
+    st.markdown("---")
+
+    st.markdown(
+        f"## 📚 Documentos - {entidad_estado}"
+    )
+    for i, row in historial_estado.iterrows():
+
+        c1, c2, c3, c4 = st.columns(
+            [2, 2, 2, 1]
+        )
+
+        with c1:
+
+            st.write(
+                row["CLUES"]
+            )
+
+        with c2:
+
+            st.write(
+                row["Tipo"]
+            )
+
+        with c3:
+
+            st.write(
+                row["Archivo"]
+            )
+
+        with c4:
+
+            st.link_button(
+                "👁 Abrir",
+                row["Link"]
+            )
 
 if modulo == "📚 Documental":
 
