@@ -274,8 +274,11 @@ def borrar_archivo_drive(link):
             .split("/")[0]
         )
 
-        drive_service.files().delete(
+        drive_service.files().update(
             fileId=file_id,
+            body={
+                "trashed": True
+            },
             supportsAllDrives=True
         ).execute()
 
