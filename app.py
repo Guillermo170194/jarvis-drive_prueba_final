@@ -1750,7 +1750,7 @@ if modulo == "📦 Inventarios":
             acta_conclusion_existente.iloc[-1]
         )
 
-         st.caption(
+        st.caption(
             "✅ Acta de conclusión cargada"
         )
 
