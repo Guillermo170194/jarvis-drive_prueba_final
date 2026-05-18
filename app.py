@@ -662,38 +662,48 @@ for _, row_base in base_operativa.iterrows():
         "ALMACÉN": almacen
     }
 
-    for tipo_doc in tipos_documentales:
+for tipo_doc in tipos_documentales:
 
-        documento = historial_clues[
-            historial_clues["Tipo"]
-            .astype(str)
-            == tipo_doc
-        ]
+    documento = historial_clues[
+        historial_clues["Tipo"]
+        .astype(str)
+        == tipo_doc
+    ]
 
-        if documento.empty:
+    if documento.empty:
 
-            fila[tipo_doc] = ""
-            fila[f"Fecha {tipo_doc}"] = ""
+        fila[tipo_doc] = "-"
+        fila[f"Fecha {tipo_doc}"] = "-"
+
+    else:
+
+        ultimo = documento.iloc[-1]
+
+        fila[tipo_doc] = (
+            ultimo["Archivo"]
+        )
+
+        fecha_doc = ultimo.iloc[5]
+
+        if (
+            pd.isna(fecha_doc)
+            or
+            str(fecha_doc).strip() == ""
+        ):
+
+            fila[f"Fecha {tipo_doc}"] = "-"
 
         else:
 
-            ultimo = documento.iloc[-1]
-
-            fila[tipo_doc] = (
-                ultimo["Archivo"]
-            )
-
             fila[f"Fecha {tipo_doc}"] = (
-                ultimo.iloc[5]
+                pd.to_datetime(
+                    fecha_doc
+                ).strftime("%d/%m/%Y")
             )
 
     matriz_documental.append(
         fila
     )
-
-df_resumen_entidad = pd.DataFrame(
-    matriz_documental
-)
 # =========================
 # KPIs VISUALES
 # =========================
