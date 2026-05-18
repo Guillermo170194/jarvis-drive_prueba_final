@@ -1570,45 +1570,155 @@ if modulo == "📦 Inventarios":
     st.info(
         f"🏬 ALMACÉN: {almacen_inv}"
     )
-
-    tipo_inv = st.selectbox(
-        "📦 Tipo inventario",
-        [
-            "Acta de inventario",
-            "Resultado inventario",
-            "Conciliación",
-            "Evidencia física",
-            "Otro"
-        ]
+    st.markdown(
+        "## 📦 Evidencias inventario"
     )
+
+    # =========================
+    # INVENTARIO FÍSICO
+    # =========================
 
     inventario_fisico = st.checkbox(
         "☑ Inventario físico recibido"
     )
 
-    archivo_inv = st.file_uploader(
-        "📎 Subir archivo inventario"
+    evidencia_fisica = None
+
+    if inventario_fisico:
+
+        evidencia_fisica = st.file_uploader(
+            "📷 Evidencia física",
+            type=["jpg", "jpeg", "png", "pdf"],
+            key="evidencia_fisica"
+        )
+
+    # =========================
+    # ACTA INICIO
+    # =========================
+
+    acta_inicio = st.checkbox(
+        "☑ Acta de inicio"
     )
 
-    if st.button("📤 Guardar inventario"):
+    archivo_acta_inicio = None
 
-        if not archivo_inv:
+    if acta_inicio:
+
+        archivo_acta_inicio = st.file_uploader(
+            "📄 PDF acta inicio",
+            type=["pdf"],
+            key="acta_inicio"
+        )
+
+    # =========================
+    # ACTA CONCLUSIÓN
+    # =========================
+
+    acta_conclusion = st.checkbox(
+        "☑ Acta de conclusión"
+    )
+
+    archivo_acta_conclusion = None
+
+    if acta_conclusion:
+
+        archivo_acta_conclusion = st.file_uploader(
+            "📄 PDF acta conclusión",
+            type=["pdf"],
+            key="acta_conclusion"
+        )
+
+    # =========================
+    # INVENTARIO PDF
+    # =========================
+
+    inventario_pdf = st.checkbox(
+        "☑ Inventario PDF"
+    )
+
+    archivo_inventario_pdf = None
+
+    if inventario_pdf:
+
+        archivo_inventario_pdf = st.file_uploader(
+            "📄 Archivo inventario PDF",
+            type=["pdf"],
+            key="inventario_pdf"
+        )
+
+    # =========================
+    # INVENTARIO EXCEL
+    # =========================
+
+    inventario_excel = st.checkbox(
+        "☑ Inventario Excel"
+    )
+
+    archivo_inventario_excel = None
+
+    if inventario_excel:
+
+        archivo_inventario_excel = st.file_uploader(
+            "📊 Archivo inventario Excel",
+            type=["xlsx", "xls"],
+            key="inventario_excel"
+        )
+
+    if st.button("📤 Guardar inventario"):
+        archivos_subidos = []
+
+        if evidencia_fisica:
+
+            archivos_subidos.append(
+                (
+                    "Evidencia física",
+                    evidencia_fisica
+                )
+            )
+
+        if archivo_acta_inicio:
+
+            archivos_subidos.append(
+                (
+                    "Acta de inicio",
+                    archivo_acta_inicio
+                )
+            )
+
+        if archivo_acta_conclusion:
+
+            archivos_subidos.append(
+                (
+                    "Acta de conclusión",
+                    archivo_acta_conclusion
+                )
+            )
+
+        if archivo_inventario_pdf:
+
+            archivos_subidos.append(
+                (
+                    "Inventario PDF",
+                    archivo_inventario_pdf
+                )
+            )
+
+        if archivo_inventario_excel:
+
+            archivos_subidos.append(
+                (
+                    "Inventario Excel",
+                    archivo_inventario_excel
+                )
+            )
+
+        if not archivos_subidos:
 
             st.warning(
-                "⚠ Debes subir archivo"
+                "⚠ Debes subir al menos un archivo"
             )
 
         else:
-
-            with tempfile.NamedTemporaryFile(
-                delete=False
-            ) as temp_file:
-
-                temp_file.write(
-                    archivo_inv.getbuffer()
-                )
-
-                temp_path = temp_file.name
 
             folder_id = (
                 obtener_carpeta_inventarios(
@@ -1616,54 +1726,66 @@ if modulo == "📦 Inventarios":
                     clues_inv
                 )
             )
-            
-            file_metadata = {
-                "name": archivo_inv.name,
-                "parents": [folder_id]
-            }
 
-            media = MediaFileUpload(
-                temp_path,
-                resumable=True
-            )
+            for tipo_archivo, archivo_actual in archivos_subidos:
 
-            uploaded_file = (
-                drive_service.files()
-                .create(
-                    body=file_metadata,
-                    media_body=media,
-                    fields="id, webViewLink",
-                    supportsAllDrives=True
+                with tempfile.NamedTemporaryFile(
+                    delete=False
+                ) as temp_file:
+
+                    temp_file.write(
+                        archivo_actual.getbuffer()
+                    )
+
+                    temp_path = temp_file.name
+
+                nombre_drive = (
+                    f"{tipo_archivo}_{clues_inv}_"
+                    f"{archivo_actual.name}"
                 )
-                .execute()
-            )
 
-            os.remove(temp_path)
+                file_metadata = {
+                    "name": nombre_drive,
+                    "parents": [folder_id]
+                }
 
-            guardar_inventario_sheets(
-                fecha=pd.Timestamp.now(),
-                entidad=entidad_inv,
-                clues=clues_inv,
-                tipo=tipo_inv,
-                archivo=archivo_inv.name,
-                inventario_fisico=(
-                    "SI"
-                    if inventario_fisico
-                    else "NO"
-                ),
-                link=uploaded_file[
-                    "webViewLink"
-                ],
-                file_id=uploaded_file["id"]
-            )
+                media = MediaFileUpload(
+                    temp_path,
+                    resumable=True
+                )
+
+                uploaded_file = (
+                    drive_service.files()
+                    .create(
+                        body=file_metadata,
+                        media_body=media,
+                        fields="id, webViewLink",
+                        supportsAllDrives=True
+                    )
+                    .execute()
+                )
+
+                os.remove(temp_path)
+
+                guardar_inventario_sheets(
+                    fecha=pd.Timestamp.now(),
+                    entidad=entidad_inv,
+                    clues=clues_inv,
+                    tipo=tipo_archivo,
+                    archivo=archivo_actual.name,
+                    inventario_fisico=(
+                        "SI"
+                        if inventario_fisico
+                        else "NO"
+                    ),
+                    link=uploaded_file[
+                        "webViewLink"
+                    ],
+                    file_id=uploaded_file["id"]
+                )
+
+            st.cache_data.clear()
 
             st.success(
-                "✅ Inventario guardado"
-            )
-
-            st.link_button(
-                "📂 Abrir archivo",
-                uploaded_file[
-                    "webViewLink"
-                ]
+                "✅ Inventarios guardados"
             )
