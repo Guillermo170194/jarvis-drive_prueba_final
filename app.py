@@ -278,9 +278,9 @@ def borrar_archivo_drive(link):
             supportsAllDrives=True
         ).execute()
 
-    except:
+    except Exception as e:
 
-        pass
+        st.error(e)
 # =========================
 # BORRAR FILA SHEETS
 # =========================
