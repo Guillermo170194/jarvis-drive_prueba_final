@@ -1728,6 +1728,68 @@ if modulo == "📦 Inventarios":
             )
 
             for tipo_archivo, archivo_actual in archivos_subidos:
+                historial_inv = (
+                    descargar_inventarios()
+                )
+
+                existente = historial_inv[
+                    (
+                        historial_inv["CLUES"]
+                        .astype(str)
+                        == str(clues_inv)
+                    )
+                    &
+                    (
+                        historial_inv["Tipo"]
+                        .astype(str)
+                        == str(tipo_archivo)
+                    )
+                ]
+                if not existente.empty:
+
+                    archivo_existente = (
+                        existente.iloc[-1]
+                    )
+
+                    st.warning(
+                        f"⚠ Ya existe "
+                        f"{tipo_archivo}"
+                    )
+
+                    st.info(
+                        f"📄 Archivo actual: "
+                        f"{archivo_existente['Archivo']}"
+                    )
+
+                    st.link_button(
+                        "👁 Abrir actual",
+                        archivo_existente["Link"]
+                    )
+
+                    reemplazar = st.checkbox(
+                        f"♻ Sustituir {tipo_archivo}",
+                        key=f"{tipo_archivo}_{clues_inv}"
+                    )
+
+                    if not reemplazar:
+
+                        continue
+
+                    try:
+
+                        drive_service.files().update(
+                            fileId=archivo_existente["File ID"],
+                            body={
+                                "trashed": True
+                            },
+                            supportsAllDrives=True
+                        ).execute()
+
+                    except Exception as e:
+
+                        st.error(e)
+
+                        continue
 
                 with tempfile.NamedTemporaryFile(
                     delete=False
@@ -1789,3 +1851,56 @@ if modulo == "📦 Inventarios":
             st.success(
                 "✅ Inventarios guardados"
             )
+    st.markdown("---")
+
+    st.markdown(
+        "## 📦 Historial inventarios"
+    )
+
+    try:
+
+        historial_inv = descargar_inventarios()
+
+        for i, row in historial_inv.iterrows():
+
+            c1, c2, c3, c4, c5 = st.columns(
+                [2, 2, 3, 1, 1]
+            )
+
+            with c1:
+
+                st.write(
+                    row["CLUES"]
+                )
+
+            with c2:
+
+                st.write(
+                    row["Tipo"]
+                )
+
+            with c3:
+
+                st.write(
+                    row["Archivo"]
+                )
+
+            with c4:
+
+                st.link_button(
+                    "👁 Abrir",
+                    row["Link"],
+                    key=f"abrir_inv_{i}"
+                )
+
+            with c5:
+
+                st.write(
+                    row[
+                        "Inventario físico"
+                    ]
+                )
+
+    except Exception as e:
+
+        st.error(e)
