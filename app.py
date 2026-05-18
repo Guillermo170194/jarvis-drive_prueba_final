@@ -663,10 +663,7 @@ if modulo == "🏠 Resumen nacional":
     )
 
     st.dataframe(
-        df_resumen_entidad.sort_values(
-            "% Cumplimiento",
-            ascending=False
-        ),
+        df_resumen_entidad,
         use_container_width=True,
         hide_index=True
     )
