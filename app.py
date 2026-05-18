@@ -1682,7 +1682,7 @@ if modulo == "📦 Inventarios":
             acta_inicio_existente.iloc[-1]
         )
 
-        st.success(
+        st.caption(
             "✅ Acta de inicio cargada"
         )
 
@@ -1699,7 +1699,7 @@ if modulo == "📦 Inventarios":
 
     else:
 
-        st.warning(
+        st.caption(
             "❌ Sin acta de inicio"
         )
 
@@ -1750,7 +1750,7 @@ if modulo == "📦 Inventarios":
             acta_conclusion_existente.iloc[-1]
         )
 
-        st.success(
+         st.caption(
             "✅ Acta de conclusión cargada"
         )
 
@@ -1767,7 +1767,7 @@ if modulo == "📦 Inventarios":
 
     else:
 
-        st.warning(
+        st.caption(
             "❌ Sin acta de conclusión"
         )
     archivo_acta_conclusion = None
@@ -1818,7 +1818,7 @@ if modulo == "📦 Inventarios":
             inventario_pdf_existente.iloc[-1]
         )
 
-        st.success(
+        st.caption(
             "✅ Inventario PDF cargado"
         )
 
@@ -1835,7 +1835,7 @@ if modulo == "📦 Inventarios":
 
     else:
 
-        st.warning(
+        st.caption(
             "❌ Sin inventario PDF"
         )
 
@@ -1887,7 +1887,7 @@ if modulo == "📦 Inventarios":
             inventario_excel_existente.iloc[-1]
         )
 
-        st.success(
+        st.caption(
             "✅ Inventario Excel cargado"
         )
 
@@ -1904,7 +1904,7 @@ if modulo == "📦 Inventarios":
 
     else:
 
-        st.warning(
+        st.caption(
             "❌ Sin inventario Excel"
         )
 
