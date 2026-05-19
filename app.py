@@ -7,8 +7,7 @@ import io
 import pandas as pd
 
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build	
 from googleapiclient.http import (
     MediaFileUpload,
     MediaIoBaseDownload
@@ -637,43 +636,51 @@ base_operativa[
 )
 
 # =========================
-# KPIs
+# KPIs NACIONALES
 # =========================
 
-correctos = base_operativa[
-    (
-        base_operativa[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        base_operativa[
-            "CORRECTO/INCORRECTO"
-        ] == "CORRECTO"
-    )
-].shape[0]
+inventarios_base = descargar_inventarios()
 
-incorrectos = base_operativa[
-    (
-        base_operativa[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        base_operativa[
-            "CORRECTO/INCORRECTO"
-        ] == "INCORRECTO"
-    )
-].shape[0]
+# TOTAL CLUES
+total_clues = (
+    base_operativa["CLUES"]
+    .dropna()
+    .astype(str)
+    .nunique()
+)
 
-no_entregados = base_operativa[
+# CLUES CON ARCHIVO FÍSICO
+clues_archivo_fisico = (
+    inventarios_base[
+        inventarios_base["Tipo"]
+        .astype(str)
+        == "Evidencia física"
+    ]["CLUES"]
+    .dropna()
+    .astype(str)
+    .nunique()
+)
+
+# CORRECTOS
+correctos = (
     base_operativa[
-        "CARPETA FÍSCA (Si/no)"
-    ] == "NO"
-].shape[0]
+        base_operativa[
+            "CORRECTO/INCORRECTO"
+        ]
+        .astype(str)
+        .str.upper()
+        == "CORRECTO"
+    ]["CLUES"]
+    .dropna()
+    .astype(str)
+    .nunique()
+)
 
+# NO ENTREGADOS
+no_entregados = (
+    total_clues
+    - clues_archivo_fisico
+)
 # =========================
 # LISTADOS OPERATIVOS
 # =========================
@@ -689,20 +696,6 @@ df_correctos = base_operativa[
         base_operativa[
             "CORRECTO/INCORRECTO"
         ] == "CORRECTO"
-    )
-]
-
-df_incorrectos = base_operativa[
-    (
-        base_operativa[
-            "CARPETA FÍSCA (Si/no)"
-        ] == "SI"
-    )
-    &
-    (
-        base_operativa[
-            "CORRECTO/INCORRECTO"
-        ] == "INCORRECTO"
     )
 ]
 
@@ -751,9 +744,26 @@ reiterativos = historial_docs[
 ].shape[0]
 
 	
+# =========================
 # RESUMEN DOCUMENTAL
 # =========================
 
+# =========================
+# INVENTARIO FÍSICO RECIBIDO
+# =========================
+
+inventarios_base = descargar_inventarios()
+
+clues_con_inventario = (
+    inventarios_base[
+        inventarios_base["Tipo"]
+        .astype(str)
+        == "Evidencia física"
+    ]["CLUES"]
+    .dropna()
+    .astype(str)
+    .unique()
+)
 # =========================
 # MATRIZ DOCUMENTAL NACIONAL
 # =========================
@@ -794,7 +804,12 @@ for _, row_base in base_operativa.iterrows():
     fila = {
         "Entidad": entidad,
         "CLUES": clues,
-        "ALMACÉN": almacen
+        "ALMACÉN": almacen,
+        "INVENTARIO FÍSICO": (
+            "SI"
+            if clues in clues_con_inventario
+            else "NO"
+        )
     }
 
     for tipo_doc in tipos_documentales:
@@ -839,7 +854,6 @@ for _, row_base in base_operativa.iterrows():
     matriz_documental.append(
         fila
     )
-
 df_resumen_entidad = pd.DataFrame(
     matriz_documental
 )
@@ -851,29 +865,45 @@ if modulo == "🏠 Resumen nacional":
 
     st.markdown("---")
 
-    k1, k2, k3 = st.columns(3)
+    # =========================
+    # KPIs PRINCIPALES
+    # =========================
+
+    k1, k2, k3, k4 = st.columns(4)
 
     with k1:
+
+        st.metric(
+            "🏥 Total CLUES",
+            total_clues
+        )
+
+    with k2:
+
+        st.metric(
+            "📦 Archivo físico",
+            clues_archivo_fisico
+        )
+
+    with k3:
 
         st.metric(
             "✅ Correctos",
             correctos
         )
 
-    with k2:
-
-        st.metric(
-            "❌ Incorrectos",
-            incorrectos
-        )
-
-    with k3:
+    with k4:
 
         st.metric(
             "📭 No entregados",
             no_entregados
         )
+
     st.markdown("---")
+
+    # =========================
+    # KPIs DOCUMENTALES
+    # =========================
 
     d1, d2, d3, d4, d5 = st.columns(5)
 
@@ -911,7 +941,12 @@ if modulo == "🏠 Resumen nacional":
             "♻ Reiterativos",
             reiterativos
         )
+
     st.markdown("---")
+
+    # =========================
+    # MATRIZ DOCUMENTAL
+    # =========================
 
     st.markdown(
         "## 📋 Matriz documental nacional"
@@ -922,9 +957,14 @@ if modulo == "🏠 Resumen nacional":
         use_container_width=True,
         hide_index=True
     )
+
     st.markdown("---")
 
-    c1, c2, c3 = st.columns(3)
+    # =========================
+    # TABLAS OPERATIVAS
+    # =========================
+
+    c1, c2 = st.columns(2)
 
     with c1:
 
@@ -948,25 +988,6 @@ if modulo == "🏠 Resumen nacional":
     with c2:
 
         st.markdown(
-            "## ❌ Incorrectos"
-        )
-
-        st.dataframe(
-            df_incorrectos[
-                [
-                    "ENTIDAD",
-                    "CLUES",
-                    "ALMACÉN"
-                ]
-            ],
-            use_container_width=True,
-            hide_index=True,
-            height=300
-        )
-
-    with c3:
-
-        st.markdown(
             "## 📭 No entregados"
         )
 
@@ -982,7 +1003,6 @@ if modulo == "🏠 Resumen nacional":
             hide_index=True,
             height=300
         )
-
 # =========================
 # CATÁLOGOS
 # =========================
