@@ -249,6 +249,39 @@ def descargar_inventarios():
         archivo,
         sheet_name="INVENTARIOS"
     )
+@st.cache_data(ttl=300)
+def descargar_historial_supervision():
+
+    request = (
+        drive_service.files()
+        .export_media(
+            fileId=EXCEL_FILE_ID,
+            mimeType=(
+                "application/vnd.openxmlformats-"
+                "officedocument.spreadsheetml.sheet"
+            )
+        )
+    )
+
+    archivo = io.BytesIO()
+
+    downloader = MediaIoBaseDownload(
+        archivo,
+        request
+    )
+
+    done = False
+
+    while done is False:
+
+        status, done = downloader.next_chunk()
+
+    archivo.seek(0)
+
+    return pd.read_excel(
+        archivo,
+        sheet_name="HISTORIAL_SUPERVISION"
+    )
 # =========================
 # ACTUALIZAR EXCEL
 # =========================
@@ -424,6 +457,43 @@ def guardar_supervision_sheets(
         range="SUPERVISION!A:R",
         valueInputOption="USER_ENTERED",
         body=body
+    ).execute()
+# =========================
+# HISTORIAL SUPERVISION
+# =========================
+
+def guardar_historial_supervision(
+    fecha,
+    entidad,
+    clues,
+    almacen,
+    verificador,
+    pdf_link
+):
+
+    values = [[
+        str(fecha),
+        entidad,
+        clues,
+        almacen,
+        verificador,
+        pdf_link
+    ]]
+
+    body = {
+        "values": values
+    }
+
+    sheets_service.spreadsheets().values().append(
+
+        spreadsheetId=EXCEL_FILE_ID,
+
+        range="HISTORIAL_SUPERVISION!A:F",
+
+        valueInputOption="USER_ENTERED",
+
+        body=body
+
     ).execute()
 
 # =========================
@@ -1744,7 +1814,7 @@ def generar_pdf_supervision(
 ):
 
     nombre_pdf = (
-        f"Supervision_{clues}.pdf"
+        f"SUPERVISION_{clues_sup}_{fecha_supervision}.pdf"
     )
 
     doc = SimpleDocTemplate(
@@ -2213,7 +2283,7 @@ def generar_pdf_supervision(
         Spacer(1, 10)
     )
 
-       # =========================
+    # =========================
     # FIRMAS
     # =========================
 
@@ -2785,6 +2855,21 @@ if modulo == "🕵 Supervisión":
         pdf_link = uploaded_pdf[
             "webViewLink"
         ]
+        guardar_historial_supervision(
+
+            fecha=pd.Timestamp.now(),
+
+            entidad=entidad_sup,
+
+            clues=clues_sup,
+
+            almacen=almacen_sup,
+
+            verificador=nombre_verificador,
+
+            pdf_link=pdf_link
+        )
+        st.cache_data.clear()
 
         # =========================
         # DESCARGAR PDF
@@ -2810,6 +2895,31 @@ if modulo == "🕵 Supervisión":
             "☁ Abrir PDF Drive",
             pdf_link
         )
+    st.markdown("---")
+
+    st.markdown(
+        "## 📚 Historial supervisiones"
+    )
+
+    try:
+
+        historial_supervision = (
+            descargar_historial_supervision()
+        )
+
+        st.dataframe(
+
+            historial_supervision,
+
+            use_container_width=True,
+
+            hide_index=True,
+
+            height=400
+        )
+    except Exception as e:
+
+        st.error(e)
 
 # =========================
 # INVENTARIOS
