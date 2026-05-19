@@ -1,3 +1,26 @@
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib import colors
+
+from reportlab.lib.pagesizes import letter
+
+from reportlab.lib.styles import getSampleStyleSheet
+
+from reportlab.platypus.flowables import Image
+
+from reportlab.pdfbase import pdfmetrics
+
+from reportlab.pdfbase.ttfonts import TTFont
+
+from reportlab.lib.enums import TA_CENTER
+
+from reportlab.lib.styles import ParagraphStyle
 import streamlit as st
 import os
 import json
@@ -1601,6 +1624,385 @@ if modulo == "📚 Documental":
         st.error(e)
 
 # =========================
+# GENERAR PDF SUPERVISIÓN
+# =========================
+
+def generar_pdf_supervision(
+    entidad,
+    clues,
+    almacen,
+    fecha_supervision,
+    nombre_verificador,
+    cargo_verificador,
+    nombre_almacen,
+    cargo_almacen,
+    conceptos_generales,
+    conceptos_diferencias
+):
+
+    nombre_pdf = (
+        f"Supervision_{clues}.pdf"
+    )
+
+    doc = SimpleDocTemplate(
+        nombre_pdf,
+        pagesize=letter,
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=20,
+        bottomMargin=20
+    )
+
+    elementos = []
+
+    styles = getSampleStyleSheet()
+
+    titulo = Paragraph(
+        """
+        <b>
+        CÉDULA DE SUPERVISIÓN
+        INVENTARIOS ANUALES
+        </b>
+        """,
+        ParagraphStyle(
+            "titulo",
+            alignment=TA_CENTER,
+            fontSize=14,
+            leading=18
+        )
+    )
+
+    elementos.append(titulo)
+
+    elementos.append(
+        Spacer(1, 12)
+    )
+
+    # =========================
+    # DATOS GENERALES
+    # =========================
+
+    datos = [
+        [
+            "Entidad",
+            entidad,
+            "CLUES",
+            clues
+        ],
+        [
+            "Unidad",
+            almacen,
+            "Fecha",
+            str(fecha_supervision)
+        ]
+    ]
+
+    tabla_datos = Table(
+        datos,
+        colWidths=[80, 180, 80, 140]
+    )
+
+    tabla_datos.setStyle(
+        TableStyle([
+            (
+                "BACKGROUND",
+                (0,0),
+                (-1,0),
+                colors.lightgrey
+            ),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
+            (
+                "FONTNAME",
+                (0,0),
+                (-1,-1),
+                "Helvetica"
+            ),
+            (
+                "FONTSIZE",
+                (0,0),
+                (-1,-1),
+                9
+            )
+        ])
+    )
+
+    elementos.append(
+        tabla_datos
+    )
+
+    elementos.append(
+        Spacer(1, 15)
+    )
+
+    # =========================
+    # VERIFICADOR
+    # =========================
+
+    verificadores = [
+        [
+            "Servidor público verificador",
+            nombre_verificador,
+            cargo_verificador
+        ],
+        [
+            "Servidor público almacén",
+            nombre_almacen,
+            cargo_almacen
+        ]
+    ]
+
+    tabla_verificador = Table(
+        verificadores,
+        colWidths=[180, 180, 140]
+    )
+
+    tabla_verificador.setStyle(
+        TableStyle([
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
+            (
+                "BACKGROUND",
+                (0,0),
+                (0,-1),
+                colors.lightgrey
+            ),
+            (
+                "FONTSIZE",
+                (0,0),
+                (-1,-1),
+                9
+            )
+        ])
+    )
+
+    elementos.append(
+        tabla_verificador
+    )
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    # =========================
+    # TABLA GENERAL
+    # =========================
+
+    encabezado = [[
+        "Concepto",
+        "Contiene",
+        "Piezas",
+        "Monto",
+        "Firmado",
+        "Observaciones"
+    ]]
+
+    filas = []
+
+    for concepto in conceptos_generales:
+
+        filas.append([
+            concepto,
+            st.session_state[
+                f"{concepto}_contiene"
+            ],
+            str(
+                st.session_state[
+                    f"{concepto}_piezas"
+                ]
+            ),
+            str(
+                st.session_state[
+                    f"{concepto}_monto"
+                ]
+            ),
+            st.session_state[
+                f"{concepto}_firmado"
+            ],
+            st.session_state[
+                f"{concepto}_obs"
+            ]
+        ])
+
+    tabla_general = Table(
+        encabezado + filas,
+        colWidths=[
+            170,
+            60,
+            70,
+            70,
+            60,
+            120
+        ]
+    )
+
+    tabla_general.setStyle(
+        TableStyle([
+            (
+                "BACKGROUND",
+                (0,0),
+                (-1,0),
+                colors.lightgrey
+            ),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
+            (
+                "FONTSIZE",
+                (0,0),
+                (-1,-1),
+                8
+            )
+        ])
+    )
+
+    elementos.append(
+        tabla_general
+    )
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    # =========================
+    # DIFERENCIAS
+    # =========================
+
+    encabezado_dif = [[
+        "Concepto",
+        "Existe",
+        "Dif más",
+        "Dif menos",
+        "Observaciones"
+    ]]
+
+    filas_dif = []
+
+    for concepto in conceptos_diferencias:
+
+        filas_dif.append([
+            concepto,
+            st.session_state[
+                f"{concepto}_existe"
+            ],
+            str(
+                st.session_state[
+                    f"{concepto}_mas"
+                ]
+            ),
+            str(
+                st.session_state[
+                    f"{concepto}_menos"
+                ]
+            ),
+            st.session_state[
+                f"{concepto}_obs_2"
+            ]
+        ])
+
+    tabla_dif = Table(
+        encabezado_dif + filas_dif,
+        colWidths=[
+            220,
+            60,
+            80,
+            80,
+            120
+        ]
+    )
+
+    tabla_dif.setStyle(
+        TableStyle([
+            (
+                "BACKGROUND",
+                (0,0),
+                (-1,0),
+                colors.lightgrey
+            ),
+            (
+                "GRID",
+                (0,0),
+                (-1,-1),
+                1,
+                colors.black
+            ),
+            (
+                "FONTSIZE",
+                (0,0),
+                (-1,-1),
+                8
+            )
+        ])
+    )
+
+    elementos.append(
+        tabla_dif
+    )
+
+    elementos.append(
+        Spacer(1, 30)
+    )
+
+    # =========================
+    # FIRMAS
+    # =========================
+
+    firmas = Table(
+        [
+            [
+                "________________________",
+                "________________________"
+            ],
+            [
+                nombre_verificador,
+                nombre_almacen
+            ]
+        ],
+        colWidths=[250, 250]
+    )
+
+    firmas.setStyle(
+        TableStyle([
+            (
+                "ALIGN",
+                (0,0),
+                (-1,-1),
+                "CENTER"
+            ),
+            (
+                "FONTSIZE",
+                (0,0),
+                (-1,-1),
+                9
+            )
+        ])
+    )
+
+    elementos.append(
+        firmas
+    )
+
+    doc.build(
+        elementos
+    )
+
+    return nombre_pdf
+
+# =========================
 # SUPERVISIÓN
 # =========================
 
@@ -1967,6 +2369,30 @@ if st.button("📤 Generar cédula"):
     st.success(
         "✅ Supervisión guardada correctamente"
     )
+    pdf_generado = generar_pdf_supervision(
+        entidad=entidad_sup,
+        clues=clues_sup,
+        almacen=almacen_sup,
+        fecha_supervision=fecha_supervision,
+        nombre_verificador=nombre_verificador,
+        cargo_verificador=cargo_verificador,
+        nombre_almacen=nombre_almacen,
+        cargo_almacen=cargo_almacen,
+        conceptos_generales=conceptos_generales,
+        conceptos_diferencias=conceptos_diferencias
+    )
+
+    with open(
+        pdf_generado,
+        "rb"
+    ) as pdf_file:
+
+        st.download_button(
+            label="📄 Descargar cédula PDF",
+            data=pdf_file,
+            file_name=pdf_generado,
+            mime="application/pdf"
+        )
 
 # =========================
 # INVENTARIOS
