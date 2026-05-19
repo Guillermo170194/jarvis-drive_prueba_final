@@ -1,3 +1,5 @@
+from reportlab.lib.pagesizes import landscape
+from reportlab.platypus.flowables import HRFlowable
 from reportlab.platypus import (
     SimpleDocTemplate,
     Table,
@@ -1622,6 +1624,43 @@ if modulo == "📚 Documental":
     except Exception as e:
 
         st.error(e)
+# =========================
+# DESCARGAR LOGO
+# =========================
+
+def descargar_logo():
+
+    file_id = os.environ[
+        "LOGO_IMSS_FILE_ID"
+    ]
+
+    request = (
+        drive_service.files()
+        .get_media(
+            fileId=file_id,
+            supportsAllDrives=True
+        )
+    )
+
+    temp_logo = tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".png"
+    )
+
+    downloader = MediaIoBaseDownload(
+        temp_logo,
+        request
+    )
+
+    done = False
+
+    while done is False:
+
+        status, done = downloader.next_chunk()
+
+    temp_logo.close()
+
+    return temp_logo.name
 
 # =========================
 # GENERAR PDF SUPERVISIÓN
@@ -1646,7 +1685,7 @@ def generar_pdf_supervision(
 
     doc = SimpleDocTemplate(
         nombre_pdf,
-        pagesize=letter,
+        pagesize=landscape(letter),
         rightMargin=20,
         leftMargin=20,
         topMargin=20,
@@ -1655,24 +1694,73 @@ def generar_pdf_supervision(
 
     elementos = []
 
+    # =========================
+    # ENCABEZADO INSTITUCIONAL
+    # =========================
+
+    try:
+
+        logo_path = descargar_logo()
+
+        encabezado = Image(
+            logo_path,
+            width=720,
+            height=55
+        )
+
+        elementos.append(
+            encabezado
+        )
+
+    except Exception as e:
+
+        st.error(e)
+
+    elementos.append(
+        Spacer(1, 10)
+    )
+
     styles = getSampleStyleSheet()
+
+    # =========================
+    # TÍTULO
+    # =========================
 
     titulo = Paragraph(
         """
+        <font size=14>
         <b>
-        CÉDULA DE SUPERVISIÓN
-        INVENTARIOS ANUALES
+        SERVICIOS DE SALUD DEL INSTITUTO MEXICANO
+        DEL SEGURO SOCIAL PARA EL BIENESTAR
         </b>
+        </font>
+        <br/>
+        <font size=12>
+        CÉDULA DE SUPERVISIÓN INVENTARIOS ANUALES
+        </font>
         """,
         ParagraphStyle(
             "titulo",
             alignment=TA_CENTER,
-            fontSize=14,
             leading=18
         )
     )
 
-    elementos.append(titulo)
+    elementos.append(
+        titulo
+    )
+
+    elementos.append(
+        Spacer(1, 8)
+    )
+
+    elementos.append(
+        HRFlowable(
+            width="100%",
+            thickness=1.5,
+            color=colors.black
+        )
+    )
 
     elementos.append(
         Spacer(1, 12)
@@ -1699,17 +1787,19 @@ def generar_pdf_supervision(
 
     tabla_datos = Table(
         datos,
-        colWidths=[80, 180, 80, 140]
+        colWidths=[80, 260, 80, 180]
     )
 
     tabla_datos.setStyle(
         TableStyle([
+
             (
                 "BACKGROUND",
                 (0,0),
                 (-1,0),
                 colors.lightgrey
             ),
+
             (
                 "GRID",
                 (0,0),
@@ -1717,17 +1807,26 @@ def generar_pdf_supervision(
                 1,
                 colors.black
             ),
+
             (
                 "FONTNAME",
                 (0,0),
                 (-1,-1),
-                "Helvetica"
+                "Helvetica-Bold"
             ),
+
             (
                 "FONTSIZE",
                 (0,0),
                 (-1,-1),
                 9
+            ),
+
+            (
+                "VALIGN",
+                (0,0),
+                (-1,-1),
+                "MIDDLE"
             )
         ])
     )
@@ -1741,15 +1840,17 @@ def generar_pdf_supervision(
     )
 
     # =========================
-    # VERIFICADOR
+    # SERVIDORES PÚBLICOS
     # =========================
 
     verificadores = [
+
         [
             "Servidor público verificador",
             nombre_verificador,
             cargo_verificador
         ],
+
         [
             "Servidor público almacén",
             nombre_almacen,
@@ -1759,11 +1860,12 @@ def generar_pdf_supervision(
 
     tabla_verificador = Table(
         verificadores,
-        colWidths=[180, 180, 140]
+        colWidths=[240, 240, 220]
     )
 
     tabla_verificador.setStyle(
         TableStyle([
+
             (
                 "GRID",
                 (0,0),
@@ -1771,12 +1873,21 @@ def generar_pdf_supervision(
                 1,
                 colors.black
             ),
+
             (
                 "BACKGROUND",
                 (0,0),
                 (0,-1),
                 colors.lightgrey
             ),
+
+            (
+                "FONTNAME",
+                (0,0),
+                (-1,-1),
+                "Helvetica"
+            ),
+
             (
                 "FONTSIZE",
                 (0,0),
@@ -1791,14 +1902,14 @@ def generar_pdf_supervision(
     )
 
     elementos.append(
-        Spacer(1, 20)
+        Spacer(1, 18)
     )
 
     # =========================
-    # TABLA GENERAL
+    # DIAGNÓSTICO GENERAL
     # =========================
 
-    encabezado = [[
+    encabezado_general = [[
         "Concepto",
         "Contiene",
         "Piezas",
@@ -1807,53 +1918,68 @@ def generar_pdf_supervision(
         "Observaciones"
     ]]
 
-    filas = []
+    filas_general = []
 
     for concepto in conceptos_generales:
 
-        filas.append([
+        filas_general.append([
+
             concepto,
+
             st.session_state[
                 f"{concepto}_contiene"
             ],
-            str(
+
+            "{:,.0f}".format(
                 st.session_state[
                     f"{concepto}_piezas"
                 ]
             ),
-            str(
+
+            "${:,.2f}".format(
                 st.session_state[
                     f"{concepto}_monto"
                 ]
             ),
+
             st.session_state[
                 f"{concepto}_firmado"
             ],
+
             st.session_state[
                 f"{concepto}_obs"
             ]
         ])
 
     tabla_general = Table(
-        encabezado + filas,
+        encabezado_general + filas_general,
         colWidths=[
-            170,
-            60,
+            220,
             70,
+            90,
+            110,
             70,
-            60,
-            120
+            180
         ]
     )
 
     tabla_general.setStyle(
         TableStyle([
+
             (
                 "BACKGROUND",
                 (0,0),
                 (-1,0),
-                colors.lightgrey
+                colors.black
             ),
+
+            (
+                "TEXTCOLOR",
+                (0,0),
+                (-1,0),
+                colors.white
+            ),
+
             (
                 "GRID",
                 (0,0),
@@ -1861,11 +1987,26 @@ def generar_pdf_supervision(
                 1,
                 colors.black
             ),
+
+            (
+                "FONTNAME",
+                (0,0),
+                (-1,0),
+                "Helvetica-Bold"
+            ),
+
             (
                 "FONTSIZE",
                 (0,0),
                 (-1,-1),
                 8
+            ),
+
+            (
+                "VALIGN",
+                (0,0),
+                (-1,-1),
+                "MIDDLE"
             )
         ])
     )
@@ -1895,20 +2036,25 @@ def generar_pdf_supervision(
     for concepto in conceptos_diferencias:
 
         filas_dif.append([
+
             concepto,
+
             st.session_state[
                 f"{concepto}_existe"
             ],
-            str(
+
+            "{:,.2f}".format(
                 st.session_state[
                     f"{concepto}_mas"
                 ]
             ),
-            str(
+
+            "{:,.2f}".format(
                 st.session_state[
                     f"{concepto}_menos"
                 ]
             ),
+
             st.session_state[
                 f"{concepto}_obs_2"
             ]
@@ -1917,22 +2063,31 @@ def generar_pdf_supervision(
     tabla_dif = Table(
         encabezado_dif + filas_dif,
         colWidths=[
-            220,
-            60,
+            320,
             80,
-            80,
-            120
+            100,
+            100,
+            170
         ]
     )
 
     tabla_dif.setStyle(
         TableStyle([
+
             (
                 "BACKGROUND",
                 (0,0),
                 (-1,0),
-                colors.lightgrey
+                colors.black
             ),
+
+            (
+                "TEXTCOLOR",
+                (0,0),
+                (-1,0),
+                colors.white
+            ),
+
             (
                 "GRID",
                 (0,0),
@@ -1940,6 +2095,14 @@ def generar_pdf_supervision(
                 1,
                 colors.black
             ),
+
+            (
+                "FONTNAME",
+                (0,0),
+                (-1,0),
+                "Helvetica-Bold"
+            ),
+
             (
                 "FONTSIZE",
                 (0,0),
@@ -1954,7 +2117,7 @@ def generar_pdf_supervision(
     )
 
     elementos.append(
-        Spacer(1, 30)
+        Spacer(1, 35)
     )
 
     # =========================
@@ -1964,30 +2127,39 @@ def generar_pdf_supervision(
     firmas = Table(
         [
             [
-                "________________________",
-                "________________________"
+                "___________________________",
+                "___________________________"
             ],
             [
                 nombre_verificador,
                 nombre_almacen
             ]
         ],
-        colWidths=[250, 250]
+        colWidths=[350, 350]
     )
 
     firmas.setStyle(
         TableStyle([
+
             (
                 "ALIGN",
                 (0,0),
                 (-1,-1),
                 "CENTER"
             ),
+
             (
                 "FONTSIZE",
                 (0,0),
                 (-1,-1),
                 9
+            ),
+
+            (
+                "TOPPADDING",
+                (0,0),
+                (-1,-1),
+                10
             )
         ])
     )
@@ -2001,7 +2173,6 @@ def generar_pdf_supervision(
     )
 
     return nombre_pdf
-
 # =========================
 # SUPERVISIÓN
 # =========================
@@ -2256,17 +2427,129 @@ if modulo == "🕵 Supervisión":
 
     st.markdown("---")
 
-if st.button("📤 Generar cédula"):
-
     # =========================
-    # GUARDAR DIAGNÓSTICO GENERAL
+    # GENERAR CÉDULA
     # =========================
 
-    for concepto in conceptos_generales:
+    if st.button("📤 Generar cédula"):
 
-        guardar_supervision_sheets(
+        # =========================
+        # GUARDAR DIAGNÓSTICO
+        # =========================
 
-            fecha=pd.Timestamp.now(),
+        for concepto in conceptos_generales:
+
+            guardar_supervision_sheets(
+
+                fecha=pd.Timestamp.now(),
+
+                entidad=entidad_sup,
+
+                clues=clues_sup,
+
+                almacen=almacen_sup,
+
+                fecha_supervision=fecha_supervision,
+
+                nombre_verificador=nombre_verificador,
+
+                cargo_verificador=cargo_verificador,
+
+                nombre_almacen=nombre_almacen,
+
+                cargo_almacen=cargo_almacen,
+
+                concepto=concepto,
+
+                contiene=st.session_state[
+                    f"{concepto}_contiene"
+                ],
+
+                piezas=st.session_state[
+                    f"{concepto}_piezas"
+                ],
+
+                monto=st.session_state[
+                    f"{concepto}_monto"
+                ],
+
+                firmado=st.session_state[
+                    f"{concepto}_firmado"
+                ],
+
+                existe="",
+
+                dif_mas="",
+
+                dif_menos="",
+
+                observaciones=st.session_state[
+                    f"{concepto}_obs"
+                ]
+            )
+
+        # =========================
+        # GUARDAR DIFERENCIAS
+        # =========================
+
+        for concepto in conceptos_diferencias:
+
+            guardar_supervision_sheets(
+
+                fecha=pd.Timestamp.now(),
+
+                entidad=entidad_sup,
+
+                clues=clues_sup,
+
+                almacen=almacen_sup,
+
+                fecha_supervision=fecha_supervision,
+
+                nombre_verificador=nombre_verificador,
+
+                cargo_verificador=cargo_verificador,
+
+                nombre_almacen=nombre_almacen,
+
+                cargo_almacen=cargo_almacen,
+
+                concepto=concepto,
+
+                contiene="",
+
+                piezas="",
+
+                monto="",
+
+                firmado="",
+
+                existe=st.session_state[
+                    f"{concepto}_existe"
+                ],
+
+                dif_mas=st.session_state[
+                    f"{concepto}_mas"
+                ],
+
+                dif_menos=st.session_state[
+                    f"{concepto}_menos"
+                ],
+
+                observaciones=st.session_state[
+                    f"{concepto}_obs_2"
+                ]
+            )
+
+        st.success(
+            "✅ Supervisión guardada correctamente"
+        )
+
+        # =========================
+        # GENERAR PDF
+        # =========================
+
+        pdf_generado = generar_pdf_supervision(
 
             entidad=entidad_sup,
 
@@ -2284,115 +2567,30 @@ if st.button("📤 Generar cédula"):
 
             cargo_almacen=cargo_almacen,
 
-            concepto=concepto,
+            conceptos_generales=conceptos_generales,
 
-            contiene=st.session_state[
-                f"{concepto}_contiene"
-            ],
-
-            piezas=st.session_state[
-                f"{concepto}_piezas"
-            ],
-
-            monto=st.session_state[
-                f"{concepto}_monto"
-            ],
-
-            firmado=st.session_state[
-                f"{concepto}_firmado"
-            ],
-
-            existe="",
-
-            dif_mas="",
-
-            dif_menos="",
-
-            observaciones=st.session_state[
-                f"{concepto}_obs"
-            ]
+            conceptos_diferencias=conceptos_diferencias
         )
 
-    # =========================
-    # GUARDAR DIFERENCIAS
-    # =========================
+        # =========================
+        # DESCARGAR PDF
+        # =========================
 
-    for concepto in conceptos_diferencias:
+        with open(
+            pdf_generado,
+            "rb"
+        ) as pdf_file:
 
-        guardar_supervision_sheets(
+            st.download_button(
 
-            fecha=pd.Timestamp.now(),
+                label="📄 Descargar cédula PDF",
 
-            entidad=entidad_sup,
+                data=pdf_file,
 
-            clues=clues_sup,
+                file_name=pdf_generado,
 
-            almacen=almacen_sup,
-
-            fecha_supervision=fecha_supervision,
-
-            nombre_verificador=nombre_verificador,
-
-            cargo_verificador=cargo_verificador,
-
-            nombre_almacen=nombre_almacen,
-
-            cargo_almacen=cargo_almacen,
-
-            concepto=concepto,
-
-            contiene="",
-
-            piezas="",
-
-            monto="",
-
-            firmado="",
-
-            existe=st.session_state[
-                f"{concepto}_existe"
-            ],
-
-            dif_mas=st.session_state[
-                f"{concepto}_mas"
-            ],
-
-            dif_menos=st.session_state[
-                f"{concepto}_menos"
-            ],
-
-            observaciones=st.session_state[
-                f"{concepto}_obs_2"
-            ]
-        )
-
-    st.success(
-        "✅ Supervisión guardada correctamente"
-    )
-    pdf_generado = generar_pdf_supervision(
-        entidad=entidad_sup,
-        clues=clues_sup,
-        almacen=almacen_sup,
-        fecha_supervision=fecha_supervision,
-        nombre_verificador=nombre_verificador,
-        cargo_verificador=cargo_verificador,
-        nombre_almacen=nombre_almacen,
-        cargo_almacen=cargo_almacen,
-        conceptos_generales=conceptos_generales,
-        conceptos_diferencias=conceptos_diferencias
-    )
-
-    with open(
-        pdf_generado,
-        "rb"
-    ) as pdf_file:
-
-        st.download_button(
-            label="📄 Descargar cédula PDF",
-            data=pdf_file,
-            file_name=pdf_generado,
-            mime="application/pdf"
-        )
+                mime="application/pdf"
+            )
 
 # =========================
 # INVENTARIOS
