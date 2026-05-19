@@ -1814,7 +1814,7 @@ def generar_pdf_supervision(
 ):
 
     nombre_pdf = (
-        f"SUPERVISION_{clues_sup}_{fecha_supervision}.pdf"
+        f"SUPERVISION_{clues}_{fecha_supervision}.pdf"
     )
 
     doc = SimpleDocTemplate(
@@ -2816,7 +2816,7 @@ if modulo == "🕵 Supervisión":
         )
 
         nombre_pdf_drive = (
-            f"SUPERVISION_{clues_sup}.pdf"
+            f"SUPERVISION_{clues_sup}_{fecha_supervision}.pdf"
         )
 
         file_metadata = {
