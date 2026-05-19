@@ -2096,6 +2096,9 @@ def generar_pdf_supervision(
     elementos.append(
         tabla_general
     )
+    elementos.append(
+        Spacer(1, 20)
+    )
 
     # =========================
     # DIFERENCIAS
@@ -2154,7 +2157,6 @@ def generar_pdf_supervision(
         ]
     )
 
-    tabla_dif.setStyle(
     tabla_dif.setStyle(
         TableStyle([
 
