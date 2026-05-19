@@ -1738,7 +1738,7 @@ def generar_pdf_supervision(
     nombre_almacen,
     cargo_almacen,
     conceptos_generales,
-    conceptos_diferencias
+    conceptos_diferencias,
     firma_verificador=None,
     firma_almacen=None
 ):
@@ -2694,7 +2694,7 @@ if modulo == "🕵 Supervisión":
 
             conceptos_generales=conceptos_generales,
 
-            conceptos_diferencias=conceptos_diferencias
+            conceptos_diferencias=conceptos_diferencias,
 
             firma_verificador=firma_verificador,
 
@@ -2781,17 +2781,6 @@ if modulo == "🕵 Supervisión":
             "☁ Abrir PDF Drive",
             pdf_link
         )
-
-            st.download_button(
-
-                label="📄 Descargar cédula PDF",
-
-                data=pdf_file,
-
-                file_name=pdf_generado,
-
-                mime="application/pdf"
-            )
 
 # =========================
 # INVENTARIOS
