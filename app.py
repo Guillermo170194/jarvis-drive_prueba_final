@@ -1785,6 +1785,11 @@ def generar_pdf_supervision(
     )
 
     styles = getSampleStyleSheet()
+    estilo_obs = ParagraphStyle(
+        "observaciones",
+        fontSize=7,
+        leading=9
+    )
 
     # =========================
     # TÍTULO
@@ -2010,9 +2015,14 @@ def generar_pdf_supervision(
                 f"{concepto}_firmado"
             ],
 
-            st.session_state[
-                f"{concepto}_obs"
-            ]
+            Paragraph(
+                str(
+                    st.session_state[
+                        f"{concepto}_obs"
+                    ]
+                ),
+                estilo_obs
+            )
         ])
 
     tabla_general = Table(
@@ -2071,16 +2081,20 @@ def generar_pdf_supervision(
                 (0,0),
                 (-1,-1),
                 "MIDDLE"
+            ),
+
+            (
+                "WORDWRAP",
+                (0,0),
+                (-1,-1),
+                True
             )
+
         ])
     )
 
     elementos.append(
         tabla_general
-    )
-
-    elementos.append(
-        Spacer(1, 20)
     )
 
     # =========================
@@ -2119,9 +2133,14 @@ def generar_pdf_supervision(
                 ]
             ),
 
-            st.session_state[
-                f"{concepto}_obs_2"
-            ]
+            Paragraph(
+                str(
+                    st.session_state[
+                        f"{concepto}_obs_2"
+                    ]
+                ),
+                estilo_obs
+            )
         ])
 
     tabla_dif = Table(
@@ -2135,6 +2154,7 @@ def generar_pdf_supervision(
         ]
     )
 
+    tabla_dif.setStyle(
     tabla_dif.setStyle(
         TableStyle([
 
@@ -2172,14 +2192,21 @@ def generar_pdf_supervision(
                 (0,0),
                 (-1,-1),
                 8
+            ),
+
+            (
+                "WORDWRAP",
+                (0,0),
+                (-1,-1),
+                True
             )
+
         ])
     )
 
     elementos.append(
         tabla_dif
     )
-
     elementos.append(
         Spacer(1, 10)
     )
