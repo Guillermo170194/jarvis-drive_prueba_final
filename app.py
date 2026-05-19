@@ -1705,7 +1705,7 @@ def generar_pdf_supervision(
         encabezado = Image(
             logo_path,
             width=720,
-            height=55
+            height=45
         )
 
         elementos.append(
@@ -2117,7 +2117,7 @@ def generar_pdf_supervision(
     )
 
     elementos.append(
-        Spacer(1, 35)
+        Spacer(1, 10)
     )
 
     # =========================
@@ -2135,7 +2135,7 @@ def generar_pdf_supervision(
                 nombre_almacen
             ]
         ],
-        colWidths=[350, 350]
+        colWidths=[300, 300]
     )
 
     firmas.setStyle(
@@ -2159,7 +2159,7 @@ def generar_pdf_supervision(
                 "TOPPADDING",
                 (0,0),
                 (-1,-1),
-                10
+                2
             )
         ])
     )
