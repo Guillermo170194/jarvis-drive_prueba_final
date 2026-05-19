@@ -57,7 +57,8 @@ modulo = st.sidebar.radio(
         "🏠 Resumen nacional",
         "🏛 Estado",
         "📚 Documental",
-        "📦 Inventarios"
+        "📦 Inventarios",
+        "🕵 Supervisión"
     ]
 )
 
@@ -1545,6 +1546,267 @@ if modulo == "📚 Documental":
     except Exception as e:
 
         st.error(e)
+
+# =========================
+# SUPERVISIÓN
+# =========================
+
+if modulo == "🕵 Supervisión":
+
+    st.markdown("---")
+
+    st.markdown(
+        "# 🕵 Cédula de supervisión"
+    )
+
+    # =========================
+    # DATOS GENERALES
+    # =========================
+
+    s1, s2 = st.columns(2)
+
+    with s1:
+
+        entidad_sup = st.selectbox(
+            "📍 Entidad",
+            entidades,
+            key="sup_entidad"
+        )
+
+    with s2:
+
+        clues_sup = st.selectbox(
+            "🏥 CLUES",
+            sorted(
+                base_operativa[
+                    base_operativa["ENTIDAD"]
+                    == entidad_sup
+                ]["CLUES"]
+                .dropna()
+                .astype(str)
+                .unique()
+            ),
+            key="sup_clues"
+        )
+
+    almacen_sup = (
+        base_operativa[
+            base_operativa["CLUES"]
+            .astype(str)
+            == str(clues_sup)
+        ]["ALMACÉN"]
+        .astype(str)
+        .iloc[0]
+    )
+
+    fecha_supervision = st.date_input(
+        "📅 Fecha supervisión"
+    )
+
+    st.info(
+        f"🏬 ALMACÉN: {almacen_sup}"
+    )
+
+    st.markdown("---")
+
+    # =========================
+    # SERVIDORES PÚBLICOS
+    # =========================
+
+    st.markdown(
+        "## 👤 Servidor público verificador"
+    )
+
+    v1, v2 = st.columns(2)
+
+    with v1:
+
+        nombre_verificador = st.text_input(
+            "Nombre verificador",
+            value="Guillermo Ortega Carteño"
+        )
+
+    with v2:
+
+        cargo_verificador = st.text_input(
+            "Cargo verificador",
+            value="Supervisor de Procesos"
+        )
+
+    st.markdown("---")
+
+    st.markdown(
+        "## 🏬 Servidor público del almacén"
+    )
+
+    a1, a2 = st.columns(2)
+
+    with a1:
+
+        nombre_almacen = st.text_input(
+            "Nombre responsable almacén"
+        )
+
+    with a2:
+
+        cargo_almacen = st.text_input(
+            "Cargo responsable almacén"
+        )
+
+    st.markdown("---")
+
+    # =========================
+    # DIAGNÓSTICO GENERAL
+    # =========================
+
+    st.markdown(
+        "# 📋 Diagnóstico general"
+    )
+
+    conceptos_generales = [
+        "ANEXO 1.- LISTADO GRAL",
+        "ANEXO 2.- IMSS B",
+        "ANEXO 3.- PROPIOS",
+        "Acta de conclusión",
+        "ANEXO 5.- ACTA DE INICIO"
+    ]
+
+    for concepto in conceptos_generales:
+
+        st.markdown(f"### {concepto}")
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+
+            contiene = st.selectbox(
+                "Contiene",
+                ["SI", "NO"],
+                key=f"{concepto}_contiene"
+            )
+
+        with c2:
+
+            piezas = st.number_input(
+                "Piezas",
+                min_value=0.0,
+                step=1.0,
+                key=f"{concepto}_piezas"
+            )
+
+        with c3:
+
+            monto = st.number_input(
+                "Monto",
+                min_value=0.0,
+                step=1.0,
+                key=f"{concepto}_monto"
+            )
+
+        with c4:
+
+            firmado = st.selectbox(
+                "Firmado",
+                ["SI", "NO"],
+                key=f"{concepto}_firmado"
+            )
+
+        observaciones = st.text_area(
+            "Observaciones",
+            key=f"{concepto}_obs"
+        )
+
+        st.markdown("---")
+
+    # =========================
+    # DIFERENCIAS
+    # =========================
+
+    st.markdown(
+        "# ⚠ Diferencias"
+    )
+
+    conceptos_diferencias = [
+        "ANEXO 4.- REPORTE DE DIF",
+        "ANEXO 6.- REPORTE LENTO Y NULO",
+        "ANEXO 7.- REPORTE CADUCOS",
+        "ANEXO 8.- REP DE PROX A CADUCAR",
+        "EXCEL",
+        "PDF",
+        "FISICO"
+    ]
+
+    for concepto in conceptos_diferencias:
+
+        st.markdown(f"### {concepto}")
+
+        d1, d2, d3 = st.columns(3)
+
+        with d1:
+
+            existe = st.selectbox(
+                "Existe",
+                ["SI", "NO"],
+                key=f"{concepto}_existe"
+            )
+
+        with d2:
+
+            dif_mas = st.number_input(
+                "Dif más",
+                step=1.0,
+                key=f"{concepto}_mas"
+            )
+
+        with d3:
+
+            dif_menos = st.number_input(
+                "Dif menos",
+                step=1.0,
+                key=f"{concepto}_menos"
+            )
+
+        observaciones = st.text_area(
+            "Observaciones",
+            key=f"{concepto}_obs_2"
+        )
+
+        st.markdown("---")
+
+    # =========================
+    # FIRMAS
+    # =========================
+
+    st.markdown(
+        "# ✍ Firmas"
+    )
+
+    f1, f2 = st.columns(2)
+
+    with f1:
+
+        firma_verificador = st.file_uploader(
+            "Firma verificador",
+            type=["png", "jpg", "jpeg"],
+            key="firma_verificador"
+        )
+
+    with f2:
+
+        firma_almacen = st.file_uploader(
+            "Firma almacén",
+            type=["png", "jpg", "jpeg"],
+            key="firma_almacen"
+        )
+
+    st.markdown("---")
+
+    if st.button("📤 Generar cédula"):
+
+        st.success(
+            "✅ Estructura supervisión lista"
+        )
+
 # =========================
 # INVENTARIOS
 # =========================
