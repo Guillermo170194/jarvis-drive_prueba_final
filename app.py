@@ -661,6 +661,68 @@ def obtener_carpeta_inventarios(
     return carpeta["id"]
 
 # =========================
+# CARPETA SUPERVISION
+# =========================
+
+def obtener_carpeta_supervision(
+    entidad,
+    clues
+):
+
+    carpeta_clues = (
+        obtener_carpeta_clues(
+            entidad,
+            clues
+        )
+    )
+
+    query = f"""
+    name = 'SUPERVISION'
+    and mimeType = 'application/vnd.google-apps.folder'
+    and '{carpeta_clues}' in parents
+    and trashed = false
+    """
+
+    resultados = (
+        drive_service.files()
+        .list(
+            q=query,
+            fields="files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        )
+        .execute()
+    )
+
+    carpetas = resultados.get(
+        "files",
+        []
+    )
+
+    if carpetas:
+
+        return carpetas[0]["id"]
+
+    metadata = {
+        "name": "SUPERVISION",
+        "mimeType":
+            "application/vnd.google-apps.folder",
+        "parents": [carpeta_clues]
+    }
+
+    carpeta = (
+        drive_service.files()
+        .create(
+            body=metadata,
+            fields="id",
+            supportsAllDrives=True
+        )
+        .execute()
+    )
+
+    return carpeta["id"]
+
+# =========================
 # CARGAR BASES
 # =========================
 
@@ -2643,10 +2705,82 @@ if modulo == "🕵 Supervisión":
         # DESCARGAR PDF
         # =========================
 
+        # =========================
+        # SUBIR PDF A DRIVE
+        # =========================
+
+        carpeta_supervision = (
+            obtener_carpeta_supervision(
+                entidad_sup,
+                clues_sup
+            )
+        )
+
+        nombre_pdf_drive = (
+            f"SUPERVISION_{clues_sup}.pdf"
+        )
+
+        file_metadata = {
+
+            "name": nombre_pdf_drive,
+
+            "parents": [
+                carpeta_supervision
+            ]
+        }
+
+        media = MediaFileUpload(
+            pdf_generado,
+            mimetype="application/pdf",
+            resumable=True
+        )
+
+        uploaded_pdf = (
+
+            drive_service.files()
+
+            .create(
+
+                body=file_metadata,
+
+                media_body=media,
+
+                fields="id, webViewLink",
+
+                supportsAllDrives=True
+            )
+
+            .execute()
+        )
+
+        pdf_link = uploaded_pdf[
+            "webViewLink"
+        ]
+
+        # =========================
+        # DESCARGAR PDF
+        # =========================
+
         with open(
             pdf_generado,
             "rb"
         ) as pdf_file:
+
+            st.download_button(
+
+                label="📄 Descargar cédula PDF",
+
+                data=pdf_file,
+
+                file_name=pdf_generado,
+
+                mime="application/pdf"
+            )
+
+        st.link_button(
+            "☁ Abrir PDF Drive",
+            pdf_link
+        )
 
             st.download_button(
 
