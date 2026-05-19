@@ -146,7 +146,7 @@ sheets_service = build(
 # DESCARGAR EXCEL
 # =========================
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=300)
 def descargar_base_operativa():
 
     request = (
@@ -181,7 +181,7 @@ def descargar_base_operativa():
     )
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=300)
 def descargar_historial():
 
     request = (
@@ -216,7 +216,7 @@ def descargar_historial():
     )
 
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=300)
 def descargar_inventarios():
 
     request = (
@@ -1677,6 +1677,8 @@ def generar_pdf_supervision(
     cargo_almacen,
     conceptos_generales,
     conceptos_diferencias
+    firma_verificador=None,
+    firma_almacen=None
 ):
 
     nombre_pdf = (
@@ -2120,21 +2122,82 @@ def generar_pdf_supervision(
         Spacer(1, 10)
     )
 
-    # =========================
+       # =========================
     # FIRMAS
     # =========================
 
+    firma_img_1 = ""
+    firma_img_2 = ""
+
+    try:
+
+        if firma_verificador is not None:
+
+            firma_temp_1 = tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=".png"
+            )
+
+            firma_temp_1.write(
+                firma_verificador.getbuffer()
+            )
+
+            firma_temp_1.close()
+
+            firma_img_1 = Image(
+                firma_temp_1.name,
+                width=140,
+                height=50
+            )
+
+    except:
+
+        firma_img_1 = ""
+
+    try:
+
+        if firma_almacen is not None:
+
+            firma_temp_2 = tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=".png"
+            )
+
+            firma_temp_2.write(
+                firma_almacen.getbuffer()
+            )
+
+            firma_temp_2.close()
+
+            firma_img_2 = Image(
+                firma_temp_2.name,
+                width=140,
+                height=50
+            )
+
+    except:
+
+        firma_img_2 = ""
+
     firmas = Table(
+
         [
+            [
+                firma_img_1,
+                firma_img_2
+            ],
+
             [
                 "___________________________",
                 "___________________________"
             ],
+
             [
                 nombre_verificador,
                 nombre_almacen
             ]
         ],
+
         colWidths=[300, 300]
     )
 
@@ -2570,6 +2633,10 @@ if modulo == "🕵 Supervisión":
             conceptos_generales=conceptos_generales,
 
             conceptos_diferencias=conceptos_diferencias
+
+            firma_verificador=firma_verificador,
+
+            firma_almacen=firma_almacen
         )
 
         # =========================
