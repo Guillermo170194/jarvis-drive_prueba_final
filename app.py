@@ -1627,94 +1627,88 @@ if modulo == "📚 Documental":
         "## 📚 Historial documental"
     )
 
-try:
+    try:
 
-    historial = historial_base.copy()
+        historial = historial_base.copy()
 
-    if historial.empty:
+        if historial.empty:
 
-        st.warning(
-            "Sin historial documental"
-        )
-
-    else:
-
-        historial_tabla = historial[
-            [
-                "Fecha",
-                "Entidad",
-                "CLUES",
-                "Tipo",
-                "Archivo"
-            ]
-        ].copy()
-
-        st.dataframe(
-
-            historial_tabla,
-
-            use_container_width=True,
-
-            hide_index=True,
-
-            height=500
-        )
-
-        st.markdown("---")
-
-        st.markdown(
-            "### 🗑 Eliminar documento"
-        )
-
-        opciones_eliminar = (
-            historial[
-                "Archivo"
-            ]
-            .astype(str)
-            .tolist()
-        )
-
-        archivo_eliminar = st.selectbox(
-            "Selecciona archivo",
-            opciones_eliminar
-        )
-
-        if st.button(
-            "🗑 Eliminar seleccionado"
-        ):
-
-            fila_eliminar = historial[
-                historial["Archivo"]
-                .astype(str)
-                == str(archivo_eliminar)
-            ].iloc[0]
-
-            borrar_archivo_drive(
-                fila_eliminar["Link"]
+            st.warning(
+                "Sin historial documental"
             )
 
-            indice = (
+        else:
+
+            historial_tabla = historial[
+                [
+                    "Fecha",
+                    "Entidad",
+                    "CLUES",
+                    "Tipo",
+                    "Archivo"
+                ]
+            ].copy()
+
+            st.dataframe(
+                historial_tabla,
+                use_container_width=True,
+                hide_index=True,
+                height=500
+            )
+
+            st.markdown("---")
+
+            st.markdown(
+                "### 🗑 Eliminar documento"
+            )
+
+            opciones_eliminar = (
                 historial[
+                    "Archivo"
+                ]
+                .astype(str)
+                .tolist()
+            )
+
+            archivo_eliminar = st.selectbox(
+                "Selecciona archivo",
+                opciones_eliminar
+            )
+
+            if st.button(
+                "🗑 Eliminar seleccionado"
+            ):
+
+                fila_eliminar = historial[
                     historial["Archivo"]
                     .astype(str)
                     == str(archivo_eliminar)
-                ].index[0]
-            )
+                ].iloc[0]
 
-            borrar_fila_historial(
-                indice + 1
-            )
+                borrar_archivo_drive(
+                    fila_eliminar["Link"]
+                )
 
-            st.cache_data.clear()
+                indice = (
+                    historial[
+                        historial["Archivo"]
+                        .astype(str)
+                        == str(archivo_eliminar)
+                    ].index[0]
+                )
 
-            st.rerun()
+                borrar_fila_historial(
+                    indice + 1
+                )
 
-except Exception as e:
+                st.cache_data.clear()
 
-    st.error(e)
+                st.rerun()
+
     except Exception as e:
 
         st.error(e)
+
 # =========================
 # DESCARGAR LOGO
 # =========================
