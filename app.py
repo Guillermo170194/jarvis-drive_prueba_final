@@ -301,9 +301,6 @@ def guardar_inventario_sheets(
         body=body
     ).execute()
 
-# =========================
-# GUARDAR SUPERVISIÓN MASIVA
-# =========================
 
 def guardar_supervision_sheets(
     rows
@@ -2338,72 +2335,67 @@ def generar_pdf_supervision(
 
 if modulo == "🕵 Supervisión":
 
-    with st.form("form_supervision"):
+    st.markdown("---")
 
-        st.markdown("---")
+    st.markdown(
+        "# 🕵 Cédula de supervisión"
+    )
 
-        st.markdown(
-            "# 🕵 Cédula de supervisión"
+    s1, s2 = st.columns(2)
+
+    with s1:
+
+        entidad_sup = st.selectbox(
+            "📍 Entidad",
+            entidades,
+            key="sup_entidad"
         )
 
-        # =========================
-        # DATOS GENERALES
-        # =========================
+    with s2:
 
-        s1, s2 = st.columns(2)
-
-        with s1:
-
-            entidad_sup = st.selectbox(
-                "📍 Entidad",
-                entidades,
-                key="sup_entidad"
-            )
-
-        with s2:
-
-            clues_disponibles = sorted(
-                base_operativa[
-                    base_operativa["ENTIDAD"]
-                    .astype(str)
-                    == str(entidad_sup)
-                ]["CLUES"]
-                .dropna()
+        clues_disponibles = sorted(
+            base_operativa[
+                base_operativa["ENTIDAD"]
                 .astype(str)
-                .unique()
-            )
-
-            clues_sup = st.selectbox(
-                "🏥 CLUES",
-                clues_disponibles
-            )
-
-        resultado_sup = base_operativa[
-            base_operativa["CLUES"]
+                == str(entidad_sup)
+            ]["CLUES"]
+            .dropna()
             .astype(str)
-            == str(clues_sup)
-        ]
+            .unique()
+        )
 
-        if resultado_sup.empty:
+        clues_sup = st.selectbox(
+            "🏥 CLUES",
+            clues_disponibles
+        )
 
-            almacen_sup = "SIN ALMACÉN"
+    resultado_sup = base_operativa[
+        base_operativa["CLUES"]
+        .astype(str)
+        == str(clues_sup)
+    ]
 
-        else:
+    if resultado_sup.empty:
 
-            almacen_sup = (
-                resultado_sup[
-                    "ALMACÉN"
-                ]
-                .astype(str)
-                .iloc[0]
-            )
+        almacen_sup = "SIN ALMACÉN"
+
+    else:
+
+        almacen_sup = (
+            resultado_sup[
+                "ALMACÉN"
+            ]
+            .astype(str)
+            .iloc[0]
+        )
+
+    st.info(
+        f"🏬 ALMACÉN: {almacen_sup}"
+    )
+    with st.form("form_supervision"):
 
         fecha_supervision = st.date_input(
             "📅 Fecha supervisión"
-        )
-
-        st.info(
-            f"🏬 ALMACÉN: {almacen_sup}"
         )
 
         st.markdown("---")
@@ -2459,20 +2451,33 @@ if modulo == "🕵 Supervisión":
         # =========================
 
         st.markdown(
-            "# 📋 Diagnóstico general"
+            "## 📋 Diagnóstico general"
         )
 
         conceptos_generales = [
+
             "ANEXO 1.- LISTADO GRAL",
+
             "ANEXO 2.- IMSS B",
+
             "ANEXO 3.- PROPIOS",
+
             "Acta de conclusión",
-            "ANEXO 5.- ACTA DE INICIO"
+
+            "ANEXO 5.- ACTA DE INICIO",
+
+            "ANEXO 6.- REPORTE LENTO Y NULO",
+
+            "ANEXO 7.- REPORTE CADUCOS",
+
+            "ANEXO 8.- REP DE PROX A CADUCAR"
         ]
 
         for concepto in conceptos_generales:
 
-            st.markdown(f"### {concepto}")
+            st.markdown(
+                f"### {concepto}"
+            )
 
             c1, c2, c3, c4 = st.columns(4)
 
@@ -2490,7 +2495,7 @@ if modulo == "🕵 Supervisión":
                     "Piezas",
                     min_value=0.0,
                     step=1.0,
-                    format="%0.0f",
+                    format="%.0f",
                     key=f"{concepto}_piezas"
                 )
 
@@ -2524,22 +2529,19 @@ if modulo == "🕵 Supervisión":
         # =========================
 
         st.markdown(
-            "# ⚠ Diferencias"
+            "## ⚠ Reporte diferencias"
         )
 
         conceptos_diferencias = [
-            "ANEXO 4.- REPORTE DE DIF",
-            "ANEXO 6.- REPORTE LENTO Y NULO",
-            "ANEXO 7.- REPORTE CADUCOS",
-            "ANEXO 8.- REP DE PROX A CADUCAR",
-            "EXCEL",
-            "PDF",
-            "FISICO"
+
+            "ANEXO 4.- REPORTE DE DIF"
         ]
 
         for concepto in conceptos_diferencias:
 
-            st.markdown(f"### {concepto}")
+            st.markdown(
+                f"### {concepto}"
+            )
 
             d1, d2, d3 = st.columns(3)
 
@@ -2548,14 +2550,16 @@ if modulo == "🕵 Supervisión":
                 st.selectbox(
                     "Existe",
                     ["SI", "NO"],
-                    key=f"{concepto}_existe"
+                    key=f"validacion_{concepto}_existe"
                 )
 
             with d2:
 
                 st.number_input(
                     "Dif más",
+                    min_value=0.0,
                     step=1.0,
+                    format="%.2f",
                     key=f"{concepto}_mas"
                 )
 
@@ -2563,9 +2567,47 @@ if modulo == "🕵 Supervisión":
 
                 st.number_input(
                     "Dif menos",
+                    min_value=0.0,
                     step=1.0,
+                    format="%.2f",
                     key=f"{concepto}_menos"
                 )
+
+            st.text_area(
+                "Observaciones",
+                key=f"validacion_{concepto}_obs"
+            )
+
+            st.markdown("---")
+
+        # =========================
+        # VALIDACIÓN DOCUMENTAL
+        # =========================
+
+        st.markdown(
+            "## 📄 Validación documental"
+        )
+
+        conceptos_validacion = [
+
+            "EXCEL",
+
+            "PDF",
+
+            "FISICO"
+        ]
+
+        for concepto in conceptos_validacion:
+
+            st.markdown(
+                f"### {concepto}"
+            )
+
+            st.selectbox(
+                "Existe",
+                ["SI", "NO"],
+                key=f"{concepto}_existe"
+            )
 
             st.text_area(
                 "Observaciones",
@@ -2579,50 +2621,44 @@ if modulo == "🕵 Supervisión":
         # =========================
 
         st.markdown(
-            "# ✍ Firmas"
+            "## ✍ Firmas"
         )
 
-        f1, f2 = st.columns(2)
+        firma_verificador = st.file_uploader(
+            "Firma verificador",
+            type=["png", "jpg", "jpeg"],
+            key="firma_verificador"
+        )
 
-        with f1:
-
-            firma_verificador = st.file_uploader(
-                "Firma verificador",
-                type=["png", "jpg", "jpeg"],
-                key="firma_verificador"
-            )
-
-        with f2:
-
-            firma_almacen = st.file_uploader(
-                "Firma almacén",
-                type=["png", "jpg", "jpeg"],
-                key="firma_almacen"
-            )
+        firma_almacen = st.file_uploader(
+            "Firma almacén",
+            type=["png", "jpg", "jpeg"],
+            key="firma_almacen"
+        )
 
         st.markdown("---")
 
-        # =========================
-        # BOTÓN FORM
-        # =========================
-
-        generar_cedula = st.form_submit_button(
-            "📤 Generar cédula"
+        guardar_supervision = st.form_submit_button(
+            "📤 Guardar supervisión"
         )
 
     # =========================
-    # PROCESAR FORMULARIO
+    # GUARDAR SUPERVISIÓN
     # =========================
 
-    if generar_cedula:
+    if guardar_supervision:
 
         rows = []
+
+        # =========================
+        # ANEXOS GENERALES
+        # =========================
 
         for concepto in conceptos_generales:
 
             rows.append([
 
-                str(pd.Timestamp.now()),
+                str(fecha_supervision),
 
                 entidad_sup,
 
@@ -2630,20 +2666,18 @@ if modulo == "🕵 Supervisión":
 
                 almacen_sup,
 
-                str(fecha_supervision),
+                str(nombre_verificador),
 
-                nombre_verificador,
+                str(cargo_verificador),
 
-                cargo_verificador,
+                str(nombre_almacen),
 
-                nombre_almacen,
-
-                cargo_almacen,
+                str(cargo_almacen),
 
                 concepto,
 
                 st.session_state[
-                    f"{concepto}_contiene"
+                    f"validacion_{concepto}_existe"
                 ],
 
                 st.session_state[
@@ -2673,7 +2707,7 @@ if modulo == "🕵 Supervisión":
 
             rows.append([
 
-                str(pd.Timestamp.now()),
+                str(fecha_supervision),
 
                 entidad_sup,
 
@@ -2681,15 +2715,13 @@ if modulo == "🕵 Supervisión":
 
                 almacen_sup,
 
-                str(fecha_supervision),
+                str(nombre_verificador),
 
-                nombre_verificador,
+                str(cargo_verificador),
 
-                cargo_verificador,
+                str(nombre_almacen),
 
-                nombre_almacen,
-
-                cargo_almacen,
+                str(cargo_almacen),
 
                 concepto,
 
@@ -2714,6 +2746,49 @@ if modulo == "🕵 Supervisión":
                 ],
 
                 st.session_state[
+                    f"validacion_{concepto}_obs"
+                ]
+            ])
+
+        for concepto in conceptos_validacion:
+
+            rows.append([
+
+                str(fecha_supervision),
+
+                entidad_sup,
+
+                clues_sup,
+
+                almacen_sup,
+
+                str(nombre_verificador),
+
+                str(cargo_verificador),
+
+                str(nombre_almacen),
+
+                str(cargo_almacen),
+
+                concepto,
+
+                "",
+
+                "",
+
+                "",
+
+                "",
+
+                st.session_state[
+                    f"{concepto}_existe"
+                ],
+
+                0,
+
+                0,
+
+                st.session_state[
                     f"{concepto}_obs_2"
                 ]
             ])
@@ -2721,12 +2796,7 @@ if modulo == "🕵 Supervisión":
         guardar_supervision_sheets(
             rows
         )
-
-        # =========================
-        # GENERAR PDF
-        # =========================
-
-        pdf_file = generar_pdf_supervision(
+        pdf_generado = generar_pdf_supervision(
 
             entidad=entidad_sup,
 
@@ -2752,33 +2822,22 @@ if modulo == "🕵 Supervisión":
 
             firma_almacen=firma_almacen
         )
-
-        # =========================
-        # SUBIR PDF DRIVE
-        # =========================
-
-        carpeta_supervision = (
-            obtener_carpeta_supervision(
-                entidad_sup,
-                clues_sup
-            )
+        folder_id = obtener_carpeta_supervision(
+            entidad_sup,
+            clues_sup
         )
 
         file_metadata = {
-
-            "name": pdf_file,
-
-            "parents": [
-                carpeta_supervision
-            ]
+            "name": pdf_generado,
+            "parents": [folder_id]
         }
 
         media = MediaFileUpload(
-            pdf_file,
+            pdf_generado,
             mimetype="application/pdf"
         )
 
-        uploaded_pdf = (
+        uploaded_file = (
             drive_service.files()
             .create(
                 body=file_metadata,
@@ -2789,17 +2848,16 @@ if modulo == "🕵 Supervisión":
             .execute()
         )
 
-        pdf_link = uploaded_pdf[
+        pdf_link = uploaded_file[
             "webViewLink"
         ]
+        if os.path.exists(pdf_generado):
 
-        # =========================
-        # HISTORIAL SUPERVISIÓN
-        # =========================
+            os.remove(pdf_generado)
 
         guardar_historial_supervision(
 
-            fecha=pd.Timestamp.now(),
+            fecha=fecha_supervision,
 
             entidad=entidad_sup,
 
@@ -2818,17 +2876,12 @@ if modulo == "🕵 Supervisión":
             "✅ Supervisión guardada correctamente",
             icon="✅"
         )
-        st.rerun()
-        st.link_button(
-            "📄 Abrir PDF",
-            pdf_link
-        )
 
-        os.remove(pdf_file)
+        st.rerun()
     st.markdown("---")
 
     st.markdown(
-        "## 📚 Historial supervisiones"
+        "## 🕵 Historial supervisiones"
     )
 
     try:
@@ -2840,100 +2893,76 @@ if modulo == "🕵 Supervisión":
         if historial_supervision.empty:
 
             st.warning(
-                "Sin historial supervisiones"
+                "Sin supervisiones"
             )
 
         else:
 
-            historial_tabla = (
-                historial_supervision[
-                    [
-                        "Fecha",
-                        "Entidad",
-                        "CLUES",
-                        "Almacen",
-                        "Verificador"
-                    ]
-                ]
-                .copy()
-            )
-
-            st.dataframe(
-
-                historial_tabla,
-
-                use_container_width=True,
-
-                hide_index=True,
-
-                height=400
-            )
-
-            st.markdown("---")
-
-            historial_supervision[
-                "Etiqueta"
-            ] = (
-
-                historial_supervision[
-                    "Fecha"
-                ]
-                .astype(str)
-                .str[:10]
-
-                + " | "
-
-                + historial_supervision[
-                    "Entidad"
-                ]
-                .astype(str)
-
-                + " | "
-
-                + historial_supervision[
-                    "Almacen"
-                ]
-                .astype(str)
-
-                + " | "
-
-                + historial_supervision[
-                    "CLUES"
-                ]
-                .astype(str)
-
-                + " | "
-
-                + historial_supervision[
-                    "Verificador"
-                ]
-                .astype(str)
-            )
-
-            seleccion_supervision = st.selectbox(
-
-                "🔎 Buscar supervisión",
-
-                sorted(
-                    historial_supervision[
-                        "Etiqueta"
-                    ]
-                    .astype(str)
-                    .unique()
+            historial_supervision = (
+                historial_supervision.sort_values(
+                    "Fecha",
+                    ascending=False
                 )
             )
 
-            fila_pdf = historial_supervision[
-                historial_supervision[
-                    "Etiqueta"
-                ]
-                == seleccion_supervision
-            ].iloc[0]
-
-            st.link_button(
-                "📄 Abrir PDF supervisión",
-                fila_pdf["PDF"]
+            buscador = st.text_input(
+                "🔎 Buscar supervisión"
             )
+
+            if buscador:
+
+                historial_supervision = (
+                    historial_supervision[
+                        historial_supervision
+                        .astype(str)
+                        .apply(
+                            lambda x:
+                            x.str.contains(
+                                buscador,
+                                case=False,
+                                na=False
+                            )
+                        )
+                        .any(axis=1)
+                    ]
+                )
+
+            for i, row in historial_supervision.iterrows():
+
+                c1, c2, c3, c4, c5 = st.columns(
+                    [2,2,3,2,1]
+                )
+
+                with c1:
+
+                    st.write(
+                        row["Fecha"]
+                    )
+
+                with c2:
+
+                    st.write(
+                        row["Entidad"]
+                    )
+
+                with c3:
+
+                    st.write(
+                        row["Almacen"]
+                    )
+
+                with c4:
+
+                    st.write(
+                        row["Verificador"]
+                    )
+
+                with c5:
+
+                    st.link_button(
+                        "👁 Abrir",
+                        row["PDF"]
+                    )
 
     except Exception as e:
 
