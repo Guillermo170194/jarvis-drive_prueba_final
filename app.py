@@ -2343,280 +2343,286 @@ def generar_pdf_supervision(
     )
 
     return nombre_pdf
+
 # =========================
 # SUPERVISIÓN
 # =========================
 
 if modulo == "🕵 Supervisión":
 
-    st.markdown("---")
+    with st.form("form_supervision"):
 
-    st.markdown(
-        "# 🕵 Cédula de supervisión"
-    )
+        st.markdown("---")
 
-    # =========================
-    # DATOS GENERALES
-    # =========================
-
-    s1, s2 = st.columns(2)
-
-    with s1:
-
-        entidad_sup = st.selectbox(
-            "📍 Entidad",
-            entidades,
-            key="sup_entidad"
+        st.markdown(
+            "# 🕵 Cédula de supervisión"
         )
 
-    with s2:
+        # =========================
+        # DATOS GENERALES
+        # =========================
 
-        clues_sup = st.selectbox(
-            "🏥 CLUES",
-            sorted(
-                base_operativa[
-                    base_operativa["ENTIDAD"]
-                    == entidad_sup
-                ]["CLUES"]
-                .dropna()
-                .astype(str)
-                .unique()
-            ),
-            key="sup_clues"
-        )
+        s1, s2 = st.columns(2)
 
-    resultado_sup = base_operativa[
-        base_operativa["CLUES"]
-        .astype(str)
-        == str(clues_sup)
-    ]
+        with s1:
 
-    if resultado_sup.empty:
+            entidad_sup = st.selectbox(
+                "📍 Entidad",
+                entidades,
+                key="sup_entidad"
+            )
 
-        almacen_sup = "SIN ALMACÉN"
+        with s2:
 
-    else:
+            clues_sup = st.selectbox(
+                "🏥 CLUES",
+                sorted(
+                    base_operativa[
+                        base_operativa["ENTIDAD"]
+                        == entidad_sup
+                    ]["CLUES"]
+                    .dropna()
+                    .astype(str)
+                    .unique()
+                ),
+                key="sup_clues"
+            )
 
-        almacen_sup = (
-            resultado_sup[
-                "ALMACÉN"
-            ]
+        resultado_sup = base_operativa[
+            base_operativa["CLUES"]
             .astype(str)
-            .iloc[0]
-        )
-    )
+            == str(clues_sup)
+        ]
 
-    fecha_supervision = st.date_input(
-        "📅 Fecha supervisión"
-    )
+        if resultado_sup.empty:
 
-    st.info(
-        f"🏬 ALMACÉN: {almacen_sup}"
-    )
+            almacen_sup = "SIN ALMACÉN"
 
-    st.markdown("---")
+        else:
 
-    # =========================
-    # SERVIDORES PÚBLICOS
-    # =========================
-
-    st.markdown(
-        "## 👤 Servidor público verificador"
-    )
-
-    v1, v2 = st.columns(2)
-
-    with v1:
-
-        nombre_verificador = st.text_input(
-            "Nombre verificador",
-            value="Guillermo Ortega Carteño"
-        )
-
-    with v2:
-
-        cargo_verificador = st.text_input(
-            "Cargo verificador",
-            value="Supervisor de Procesos"
-        )
-
-    st.markdown("---")
-
-    st.markdown(
-        "## 🏬 Servidor público del almacén"
-    )
-
-    a1, a2 = st.columns(2)
-
-    with a1:
-
-        nombre_almacen = st.text_input(
-            "Nombre responsable almacén"
-        )
-
-    with a2:
-
-        cargo_almacen = st.text_input(
-            "Cargo responsable almacén"
-        )
-
-    st.markdown("---")
-
-    # =========================
-    # DIAGNÓSTICO GENERAL
-    # =========================
-
-    st.markdown(
-        "# 📋 Diagnóstico general"
-    )
-
-    conceptos_generales = [
-        "ANEXO 1.- LISTADO GRAL",
-        "ANEXO 2.- IMSS B",
-        "ANEXO 3.- PROPIOS",
-        "Acta de conclusión",
-        "ANEXO 5.- ACTA DE INICIO"
-    ]
-
-    for concepto in conceptos_generales:
-
-        st.markdown(f"### {concepto}")
-
-        c1, c2, c3, c4 = st.columns(4)
-
-        with c1:
-
-            contiene = st.selectbox(
-                "Contiene",
-                ["SI", "NO"],
-                key=f"{concepto}_contiene"
+            almacen_sup = (
+                resultado_sup[
+                    "ALMACÉN"
+                ]
+                .astype(str)
+                .iloc[0]
             )
 
-        with c2:
+        fecha_supervision = st.date_input(
+            "📅 Fecha supervisión"
+        )
 
-            piezas = st.number_input(
-                "Piezas",
-                min_value=0.0,
-                step=1.0,
-                key=f"{concepto}_piezas"
-            )
-
-        with c3:
-
-            monto = st.number_input(
-                "Monto",
-                min_value=0.0,
-                step=1.0,
-                key=f"{concepto}_monto"
-            )
-
-        with c4:
-
-            firmado = st.selectbox(
-                "Firmado",
-                ["SI", "NO"],
-                key=f"{concepto}_firmado"
-            )
-
-        observaciones = st.text_area(
-            "Observaciones",
-            key=f"{concepto}_obs"
+        st.info(
+            f"🏬 ALMACÉN: {almacen_sup}"
         )
 
         st.markdown("---")
 
-    # =========================
-    # DIFERENCIAS
-    # =========================
+        # =========================
+        # SERVIDORES PÚBLICOS
+        # =========================
 
-    st.markdown(
-        "# ⚠ Diferencias"
-    )
-
-    conceptos_diferencias = [
-        "ANEXO 4.- REPORTE DE DIF",
-        "ANEXO 6.- REPORTE LENTO Y NULO",
-        "ANEXO 7.- REPORTE CADUCOS",
-        "ANEXO 8.- REP DE PROX A CADUCAR",
-        "EXCEL",
-        "PDF",
-        "FISICO"
-    ]
-
-    for concepto in conceptos_diferencias:
-
-        st.markdown(f"### {concepto}")
-
-        d1, d2, d3 = st.columns(3)
-
-        with d1:
-
-            existe = st.selectbox(
-                "Existe",
-                ["SI", "NO"],
-                key=f"{concepto}_existe"
-            )
-
-        with d2:
-
-            dif_mas = st.number_input(
-                "Dif más",
-                step=1.0,
-                key=f"{concepto}_mas"
-            )
-
-        with d3:
-
-            dif_menos = st.number_input(
-                "Dif menos",
-                step=1.0,
-                key=f"{concepto}_menos"
-            )
-
-        observaciones = st.text_area(
-            "Observaciones",
-            key=f"{concepto}_obs_2"
+        st.markdown(
+            "## 👤 Servidor público verificador"
         )
+
+        v1, v2 = st.columns(2)
+
+        with v1:
+
+            nombre_verificador = st.text_input(
+                "Nombre verificador",
+                value="Guillermo Ortega Carteño"
+            )
+
+        with v2:
+
+            cargo_verificador = st.text_input(
+                "Cargo verificador",
+                value="Supervisor de Procesos"
+            )
 
         st.markdown("---")
 
-    # =========================
-    # FIRMAS
-    # =========================
-
-    st.markdown(
-        "# ✍ Firmas"
-    )
-
-    f1, f2 = st.columns(2)
-
-    with f1:
-
-        firma_verificador = st.file_uploader(
-            "Firma verificador",
-            type=["png", "jpg", "jpeg"],
-            key="firma_verificador"
+        st.markdown(
+            "## 🏬 Servidor público del almacén"
         )
 
-    with f2:
+        a1, a2 = st.columns(2)
 
-        firma_almacen = st.file_uploader(
-            "Firma almacén",
-            type=["png", "jpg", "jpeg"],
-            key="firma_almacen"
+        with a1:
+
+            nombre_almacen = st.text_input(
+                "Nombre responsable almacén"
+            )
+
+        with a2:
+
+            cargo_almacen = st.text_input(
+                "Cargo responsable almacén"
+            )
+
+        st.markdown("---")
+
+        # =========================
+        # DIAGNÓSTICO GENERAL
+        # =========================
+
+        st.markdown(
+            "# 📋 Diagnóstico general"
         )
 
-    st.markdown("---")
+        conceptos_generales = [
+            "ANEXO 1.- LISTADO GRAL",
+            "ANEXO 2.- IMSS B",
+            "ANEXO 3.- PROPIOS",
+            "Acta de conclusión",
+            "ANEXO 5.- ACTA DE INICIO"
+        ]
 
-    # =========================
-    # GENERAR CÉDULA
-    # =========================
+        for concepto in conceptos_generales:
 
-    if st.button("📤 Generar cédula"):
+            st.markdown(f"### {concepto}")
+
+            c1, c2, c3, c4 = st.columns(4)
+
+            with c1:
+
+                st.selectbox(
+                    "Contiene",
+                    ["SI", "NO"],
+                    key=f"{concepto}_contiene"
+                )
+
+            with c2:
+
+                st.number_input(
+                    "Piezas",
+                    min_value=0.0,
+                    step=1.0,
+                    key=f"{concepto}_piezas"
+                )
+
+            with c3:
+
+                st.number_input(
+                    "Monto",
+                    min_value=0.0,
+                    step=1.0,
+                    key=f"{concepto}_monto"
+                )
+
+            with c4:
+
+                st.selectbox(
+                    "Firmado",
+                    ["SI", "NO"],
+                    key=f"{concepto}_firmado"
+                )
+
+            st.text_area(
+                "Observaciones",
+                key=f"{concepto}_obs"
+            )
+
+            st.markdown("---")
 
         # =========================
-        # GUARDAR DIAGNÓSTICO
+        # DIFERENCIAS
         # =========================
+
+        st.markdown(
+            "# ⚠ Diferencias"
+        )
+
+        conceptos_diferencias = [
+            "ANEXO 4.- REPORTE DE DIF",
+            "ANEXO 6.- REPORTE LENTO Y NULO",
+            "ANEXO 7.- REPORTE CADUCOS",
+            "ANEXO 8.- REP DE PROX A CADUCAR",
+            "EXCEL",
+            "PDF",
+            "FISICO"
+        ]
+
+        for concepto in conceptos_diferencias:
+
+            st.markdown(f"### {concepto}")
+
+            d1, d2, d3 = st.columns(3)
+
+            with d1:
+
+                st.selectbox(
+                    "Existe",
+                    ["SI", "NO"],
+                    key=f"{concepto}_existe"
+                )
+
+            with d2:
+
+                st.number_input(
+                    "Dif más",
+                    step=1.0,
+                    key=f"{concepto}_mas"
+                )
+
+            with d3:
+
+                st.number_input(
+                    "Dif menos",
+                    step=1.0,
+                    key=f"{concepto}_menos"
+                )
+
+            st.text_area(
+                "Observaciones",
+                key=f"{concepto}_obs_2"
+            )
+
+            st.markdown("---")
+
+        # =========================
+        # FIRMAS
+        # =========================
+
+        st.markdown(
+            "# ✍ Firmas"
+        )
+
+        f1, f2 = st.columns(2)
+
+        with f1:
+
+            firma_verificador = st.file_uploader(
+                "Firma verificador",
+                type=["png", "jpg", "jpeg"],
+                key="firma_verificador"
+            )
+
+        with f2:
+
+            firma_almacen = st.file_uploader(
+                "Firma almacén",
+                type=["png", "jpg", "jpeg"],
+                key="firma_almacen"
+            )
+
+        st.markdown("---")
+
+        # =========================
+        # BOTÓN FORM
+        # =========================
+
+        generar_cedula = st.form_submit_button(
+            "📤 Generar cédula"
+        )
+
+    # =========================
+    # PROCESAR FORMULARIO
+    # =========================
+
+    if generar_cedula:
 
         for concepto in conceptos_generales:
 
@@ -2668,10 +2674,6 @@ if modulo == "🕵 Supervisión":
                     f"{concepto}_obs"
                 ]
             )
-
-        # =========================
-        # GUARDAR DIFERENCIAS
-        # =========================
 
         for concepto in conceptos_diferencias:
 
@@ -2725,158 +2727,6 @@ if modulo == "🕵 Supervisión":
         st.success(
             "✅ Supervisión guardada correctamente"
         )
-
-        # =========================
-        # GENERAR PDF
-        # =========================
-
-        pdf_generado = generar_pdf_supervision(
-
-            entidad=entidad_sup,
-
-            clues=clues_sup,
-
-            almacen=almacen_sup,
-
-            fecha_supervision=fecha_supervision,
-
-            nombre_verificador=nombre_verificador,
-
-            cargo_verificador=cargo_verificador,
-
-            nombre_almacen=nombre_almacen,
-
-            cargo_almacen=cargo_almacen,
-
-            conceptos_generales=conceptos_generales,
-
-            conceptos_diferencias=conceptos_diferencias,
-
-            firma_verificador=firma_verificador,
-
-            firma_almacen=firma_almacen
-        )
-
-        # =========================
-        # DESCARGAR PDF
-        # =========================
-
-        # =========================
-        # SUBIR PDF A DRIVE
-        # =========================
-
-        carpeta_supervision = (
-            obtener_carpeta_supervision(
-                entidad_sup,
-                clues_sup
-            )
-        )
-
-        nombre_pdf_drive = (
-            f"SUPERVISION_{clues_sup}_{fecha_supervision}.pdf"
-        )
-
-        file_metadata = {
-
-            "name": nombre_pdf_drive,
-
-            "parents": [
-                carpeta_supervision
-            ]
-        }
-
-        media = MediaFileUpload(
-            pdf_generado,
-            mimetype="application/pdf",
-            resumable=True
-        )
-
-        uploaded_pdf = (
-
-            drive_service.files()
-
-            .create(
-
-                body=file_metadata,
-
-                media_body=media,
-
-                fields="id, webViewLink",
-
-                supportsAllDrives=True
-            )
-
-            .execute()
-        )
-
-        pdf_link = uploaded_pdf[
-            "webViewLink"
-        ]
-        guardar_historial_supervision(
-
-            fecha=pd.Timestamp.now(),
-
-            entidad=entidad_sup,
-
-            clues=clues_sup,
-
-            almacen=almacen_sup,
-
-            verificador=nombre_verificador,
-
-            pdf_link=pdf_link
-        )
-        st.cache_data.clear()
-
-        # =========================
-        # DESCARGAR PDF
-        # =========================
-
-        with open(
-            pdf_generado,
-            "rb"
-        ) as pdf_file:
-
-            st.download_button(
-
-                label="📄 Descargar cédula PDF",
-
-                data=pdf_file,
-
-                file_name=pdf_generado,
-
-                mime="application/pdf"
-            )
-
-        st.link_button(
-            "☁ Abrir PDF Drive",
-            pdf_link
-        )
-    st.markdown("---")
-
-    st.markdown(
-        "## 📚 Historial supervisiones"
-    )
-
-    try:
-
-        historial_supervision = (
-            historial_supervision_base.copy()
-        )
-
-        st.dataframe(
-
-            historial_supervision,
-
-            use_container_width=True,
-
-            hide_index=True,
-
-            height=400
-        )
-    except Exception as e:
-
-        st.error(e)
 
 # =========================
 # INVENTARIOS
