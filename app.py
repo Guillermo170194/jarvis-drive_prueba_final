@@ -2122,7 +2122,7 @@ def generar_pdf_supervision(
             concepto,
 
             st.session_state[
-                f"{concepto}_existe"
+                f"validacion_{concepto}_existe"
             ],
 
             "{:,.2f}".format(
@@ -2140,7 +2140,7 @@ def generar_pdf_supervision(
             Paragraph(
                 str(
                     st.session_state[
-                        f"{concepto}_obs_2"
+                        f"validacion_{concepto}_obs"
                     ]
                 ),
                 estilo_obs
@@ -2677,7 +2677,7 @@ if modulo == "🕵 Supervisión":
                 concepto,
 
                 st.session_state[
-                    f"validacion_{concepto}_existe"
+                    f"{concepto}_contiene"
                 ],
 
                 st.session_state[
@@ -2734,7 +2734,7 @@ if modulo == "🕵 Supervisión":
                 "",
 
                 st.session_state[
-                    f"{concepto}_existe"
+                     f"{concepto}_contiene"
                 ],
 
                 st.session_state[
