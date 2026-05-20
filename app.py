@@ -422,30 +422,35 @@ def borrar_archivo_drive(link):
 
 def borrar_fila_historial(row_number):
 
-    historial = historial_base.copy()
+    requests = [
 
-    historial = historial.drop(
-        historial.index[row_number - 1]
-    )
+        {
+            "deleteDimension": {
 
-    historial = historial.fillna("")
+                "range": {
 
-    # limpiar hoja
-    sheets_service.spreadsheets().values().clear(
-        spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A:H"
-    ).execute()
+                    "sheetId": 856716998,
 
-    # volver a escribir
-    values = [historial.columns.tolist()] + historial.values.tolist()
+                    "dimension": "ROWS",
 
-    sheets_service.spreadsheets().values().update(
-        spreadsheetId=EXCEL_FILE_ID,
-        range="HISTORIAL_DOCUMENTAL!A1",
-        valueInputOption="USER_ENTERED",
-        body={
-            "values": values
+                    "startIndex": row_number,
+
+                    "endIndex": row_number + 1
+                }
+            }
         }
+    ]
+
+    body = {
+        "requests": requests
+    }
+
+    sheets_service.spreadsheets().batchUpdate(
+
+        spreadsheetId=EXCEL_FILE_ID,
+
+        body=body
+
     ).execute()
 
 # =========================
@@ -1347,15 +1352,25 @@ if modulo == "📚 Documental":
             "🏥 CLUES",
             sorted(clues_filtrados)
         )
-    almacen_clues = (
-        base_operativa[
-            base_operativa["CLUES"]
-            .astype(str)
-            == str(clues)
-        ]["ALMACÉN"]
+    resultado_clues = base_operativa[
+        base_operativa["CLUES"]
         .astype(str)
-        .iloc[0]
-    )
+        == str(clues)
+    ]
+
+    if resultado_clues.empty:
+
+        almacen_clues = "SIN ALMACÉN"
+
+    else:
+
+        almacen_clues = (
+            resultado_clues[
+                "ALMACÉN"
+            ]
+            .astype(str)
+            .iloc[0]
+        )
 
     st.info(
         f"🏬 ALMACÉN: {almacen_clues}"
@@ -1498,34 +1513,12 @@ if modulo == "📚 Documental":
                         historial_actual.fillna("")
                     )
 
-                    # limpiar hoja
-                    (
-                        sheets_service.spreadsheets()
-                        .values()
-                        .clear(
-                            spreadsheetId=EXCEL_FILE_ID,
-                            range="HISTORIAL_DOCUMENTAL!A:H"
-                        )
-                        .execute()
+                    indice = (
+                        existente.index[0]
                     )
 
-                    # reescribir
-                    values = [
-                        historial_actual.columns.tolist()
-                    ] + historial_actual.values.tolist()
-
-                    (
-                        sheets_service.spreadsheets()
-                        .values()
-                        .update(
-                            spreadsheetId=EXCEL_FILE_ID,
-                            range="HISTORIAL_DOCUMENTAL!A1",
-                            valueInputOption="USER_ENTERED",
-                            body={
-                                "values": values
-                            }
-                        )
-                        .execute()
+                    borrar_fila_historial(
+                        indice + 1
                     )
 
                     st.success(
@@ -2392,14 +2385,25 @@ if modulo == "🕵 Supervisión":
             key="sup_clues"
         )
 
-    almacen_sup = (
-        base_operativa[
-            base_operativa["CLUES"]
-            .astype(str)
-            == str(clues_sup)
-        ]["ALMACÉN"]
+    resultado_sup = base_operativa[
+        base_operativa["CLUES"]
         .astype(str)
-        .iloc[0]
+        == str(clues_sup)
+    ]
+
+    if resultado_sup.empty:
+
+        almacen_sup = "SIN ALMACÉN"
+
+    else:
+
+        almacen_sup = (
+            resultado_sup[
+                "ALMACÉN"
+            ]
+            .astype(str)
+            .iloc[0]
+        )
     )
 
     fecha_supervision = st.date_input(
@@ -2906,15 +2910,25 @@ if modulo == "📦 Inventarios":
             )
         )
 
-    almacen_inv = (
-        base_operativa[
-            base_operativa["CLUES"]
-            .astype(str)
-            == str(clues_inv)
-        ]["ALMACÉN"]
+    resultado_inv = base_operativa[
+        base_operativa["CLUES"]
         .astype(str)
-        .iloc[0]
-    )
+        == str(clues_inv)
+    ]
+
+    if resultado_inv.empty:
+
+        almacen_inv = "SIN ALMACÉN"
+
+    else:
+
+        almacen_inv = (
+            resultado_inv[
+                "ALMACÉN"
+            ]
+            .astype(str)
+            .iloc[0]
+        )
 
     st.info(
         f"🏬 ALMACÉN: {almacen_inv}"
