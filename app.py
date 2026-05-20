@@ -2344,21 +2344,21 @@ if modulo == "🕵 Supervisión":
 
         with s2:
 
-        clues_disponibles = sorted(
-            base_operativa[
-                base_operativa["ENTIDAD"]
+            clues_disponibles = sorted(
+                base_operativa[
+                    base_operativa["ENTIDAD"]
+                    .astype(str)
+                    == str(entidad_sup)
+                ]["CLUES"]
+                .dropna()
                 .astype(str)
-                == str(entidad_sup)
-            ]["CLUES"]
-            .dropna()
-            .astype(str)
-            .unique()
-        )
+                .unique()
+            )
 
-        clues_sup = st.selectbox(
-            "🏥 CLUES",
-            clues_disponibles
-        )
+            clues_sup = st.selectbox(
+                "🏥 CLUES",
+                clues_disponibles
+            )
 
         resultado_sup = base_operativa[
             base_operativa["CLUES"]
@@ -2482,7 +2482,7 @@ if modulo == "🕵 Supervisión":
                     "Monto",
                     min_value=0.0,
                     step=1.0,
-                    format="%0.0f",
+                    format="%.2f",
                     key=f"{concepto}_monto"
                 )
 
@@ -2865,14 +2865,10 @@ if modulo == "🕵 Supervisión":
                 opciones_pdf
             )
 
-            if st.button(
-                "👁 Abrir PDF supervisión"
-            ):
-
-                st.link_button(
-                    "📄 Abrir PDF",
-                    pdf_seleccionado
-                )
+            st.link_button(
+                "📄 Abrir PDF supervisión",
+                pdf_seleccionado
+            )
 
     except Exception as e:
 
