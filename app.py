@@ -2800,10 +2800,9 @@ if modulo == "🕵 Supervisión":
         st.cache_data.clear()
 
         st.toast(
-            "✅ Supervisión guardada correctamente
+            "✅ Supervisión guardada correctamente",
             icon="✅"
         )
-
         st.rerun()
         st.link_button(
             "📄 Abrir PDF",
@@ -3508,7 +3507,7 @@ if modulo == "📦 Inventarios":
             st.cache_data.clear()
 
             st.toast(
-                "✅ Inventarios guardados"
+                "✅ Inventarios guardados",
                 icon="✅"
             )
 
