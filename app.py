@@ -908,14 +908,29 @@ for _, row_base in base_operativa.iterrows():
         .astype(str)
         == clues
     ]
+    supervision_clues = historial_supervision_base[
+        historial_supervision_base["CLUES"]
+        .astype(str)
+        == clues
+    ]
 
     fila = {
+
         "Entidad": entidad,
+
         "CLUES": clues,
+
         "ALMACÉN": almacen,
+
         "INVENTARIO FÍSICO": (
             "SI"
             if clues in clues_con_inventario
+            else "NO"
+        ),
+
+        "SUPERVISIÓN": (
+            "SI"
+            if not supervision_clues.empty
             else "NO"
         )
     }
