@@ -2344,19 +2344,21 @@ if modulo == "🕵 Supervisión":
 
         with s2:
 
-            clues_sup = st.selectbox(
-                "🏥 CLUES",
-                sorted(
-                    base_operativa[
-                        base_operativa["ENTIDAD"]
-                        == entidad_sup
-                    ]["CLUES"]
-                    .dropna()
-                    .astype(str)
-                    .unique()
-                ),
-                key="sup_clues"
-            )
+        clues_disponibles = sorted(
+            base_operativa[
+                base_operativa["ENTIDAD"]
+                .astype(str)
+                == str(entidad_sup)
+            ]["CLUES"]
+            .dropna()
+            .astype(str)
+            .unique()
+        )
+
+        clues_sup = st.selectbox(
+            "🏥 CLUES",
+            clues_disponibles
+        )
 
         resultado_sup = base_operativa[
             base_operativa["CLUES"]
@@ -2470,6 +2472,7 @@ if modulo == "🕵 Supervisión":
                     "Piezas",
                     min_value=0.0,
                     step=1.0,
+                    format="%0.0f",
                     key=f"{concepto}_piezas"
                 )
 
@@ -2479,6 +2482,7 @@ if modulo == "🕵 Supervisión":
                     "Monto",
                     min_value=0.0,
                     step=1.0,
+                    format="%0.0f",
                     key=f"{concepto}_monto"
                 )
 
