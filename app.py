@@ -143,11 +143,11 @@ sheets_service = build(
 )
 
 # =========================
-# DESCARGAR EXCEL
+# DESCARGAR EXCEL ÚNICO
 # =========================
 
 @st.cache_data(ttl=300)
-def descargar_base_operativa():
+def descargar_excel():
 
     request = (
         drive_service.files()
@@ -169,119 +169,14 @@ def descargar_base_operativa():
 
     done = False
 
-    while done is False:
+    while not done:
 
         status, done = downloader.next_chunk()
 
     archivo.seek(0)
 
-    return pd.read_excel(
-        archivo,
-        sheet_name=0
-    )
+    return archivo
 
-
-@st.cache_data(ttl=300)
-def descargar_historial():
-
-    request = (
-        drive_service.files()
-        .export_media(
-            fileId=EXCEL_FILE_ID,
-            mimeType=(
-                "application/vnd.openxmlformats-"
-                "officedocument.spreadsheetml.sheet"
-            )
-        )
-    )
-
-    archivo = io.BytesIO()
-
-    downloader = MediaIoBaseDownload(
-        archivo,
-        request
-    )
-
-    done = False
-
-    while done is False:
-
-        status, done = downloader.next_chunk()
-
-    archivo.seek(0)
-
-    return pd.read_excel(
-        archivo,
-        sheet_name="HISTORIAL_DOCUMENTAL"
-    )
-
-
-@st.cache_data(ttl=300)
-def descargar_inventarios():
-
-    request = (
-        drive_service.files()
-        .export_media(
-            fileId=EXCEL_FILE_ID,
-            mimeType=(
-                "application/vnd.openxmlformats-"
-                "officedocument.spreadsheetml.sheet"
-            )
-        )
-    )
-
-    archivo = io.BytesIO()
-
-    downloader = MediaIoBaseDownload(
-        archivo,
-        request
-    )
-
-    done = False
-
-    while done is False:
-
-        status, done = downloader.next_chunk()
-
-    archivo.seek(0)
-
-    return pd.read_excel(
-        archivo,
-        sheet_name="INVENTARIOS"
-    )
-@st.cache_data(ttl=300)
-def descargar_historial_supervision():
-
-    request = (
-        drive_service.files()
-        .export_media(
-            fileId=EXCEL_FILE_ID,
-            mimeType=(
-                "application/vnd.openxmlformats-"
-                "officedocument.spreadsheetml.sheet"
-            )
-        )
-    )
-
-    archivo = io.BytesIO()
-
-    downloader = MediaIoBaseDownload(
-        archivo,
-        request
-    )
-
-    done = False
-
-    while done is False:
-
-        status, done = downloader.next_chunk()
-
-    archivo.seek(0)
-
-    return pd.read_excel(
-        archivo,
-        sheet_name="HISTORIAL_SUPERVISION"
-    )
 # =========================
 # ACTUALIZAR EXCEL
 # =========================
@@ -798,9 +693,33 @@ def obtener_carpeta_supervision(
 
 try:
 
-    base_operativa = descargar_base_operativa()
+    excel_file = descargar_excel()
 
-    historial_base = descargar_historial()
+    base_operativa = pd.read_excel(
+        excel_file,
+        sheet_name=0
+    )
+
+    excel_file.seek(0)
+
+    historial_base = pd.read_excel(
+        excel_file,
+        sheet_name="HISTORIAL_DOCUMENTAL"
+    )
+
+    excel_file.seek(0)
+
+    inventarios_base = pd.read_excel(
+        excel_file,
+        sheet_name="INVENTARIOS"
+    )
+
+    excel_file.seek(0)
+
+    historial_supervision_base = pd.read_excel(
+        excel_file,
+        sheet_name="HISTORIAL_SUPERVISION"
+    )
 
 except Exception as e:
 
@@ -810,6 +729,9 @@ except Exception as e:
 
     historial_base = pd.DataFrame()
 
+    inventarios_base = pd.DataFrame()
+
+    historial_supervision_base = pd.DataFrame()
 # =========================
 # LIMPIAR COLUMNAS
 # =========================
@@ -850,7 +772,7 @@ base_operativa[
 # KPIs NACIONALES
 # =========================
 
-inventarios_base = descargar_inventarios()
+inventarios_base = inventarios_base.copy()
 
 # TOTAL CLUES
 total_clues = (
@@ -920,7 +842,7 @@ df_no_entregados = base_operativa[
 # KPIs DOCUMENTALES
 # =========================
 
-historial_docs = descargar_historial()
+historial_docs = historial_base.copy()
 
 total_documentos = historial_docs.shape[0]
 
@@ -963,7 +885,7 @@ reiterativos = historial_docs[
 # INVENTARIO FÍSICO RECIBIDO
 # =========================
 
-inventarios_base = descargar_inventarios()
+inventarios_base = inventarios_base.copy()
 
 clues_con_inventario = (
     inventarios_base[
@@ -1509,7 +1431,7 @@ if modulo == "📚 Documental":
             # VALIDAR DUPLICADOS
             # =========================
 
-            historial_actual = descargar_historial()
+            historial_actual = historial_base.copy()
 
             existente = historial_actual[
                 (
@@ -1707,7 +1629,7 @@ if modulo == "📚 Documental":
 
     try:
 
-        historial = descargar_historial()
+        historial = historial_base.copy()
 
         for i, row in historial.iterrows():
 
@@ -2904,7 +2826,7 @@ if modulo == "🕵 Supervisión":
     try:
 
         historial_supervision = (
-            descargar_historial_supervision()
+            historial_supervision_base.copy()
         )
 
         st.dataframe(
@@ -2969,7 +2891,7 @@ if modulo == "📦 Inventarios":
     try:
 
         historial_inv = (
-            descargar_inventarios()
+            inventarios_base.copy()
         )
 
     except:
