@@ -1575,6 +1575,8 @@ if modulo == "📚 Documental":
                 "✅ Documento guardado correctamente"
             )
 
+            st.rerun()
+
             st.link_button(
                 "📂 Abrir archivo",
                 drive_link
@@ -2800,6 +2802,7 @@ if modulo == "🕵 Supervisión":
             "✅ Supervisión guardada correctamente"
         )
 
+        st.rerun()
         st.link_button(
             "📄 Abrir PDF",
             pdf_link
@@ -3459,6 +3462,8 @@ if modulo == "📦 Inventarios":
             st.success(
                 "✅ Inventarios guardados"
             )
+
+            st.rerun()
     st.markdown("---")
 
     st.markdown(
