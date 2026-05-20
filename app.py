@@ -3459,45 +3459,27 @@ if modulo == "📦 Inventarios":
 
         historial_inv = inventarios_base.copy()
 
-        for i, row in historial_inv.iterrows():
+        historial_tabla = historial_inv[
+            [
+                "Fecha",
+                "Entidad",
+                "CLUES",
+                "Tipo",
+                "Archivo",
+                "Inventario físico"
+            ]
+        ].copy()
 
-            c1, c2, c3, c4, c5 = st.columns(
-                [2, 2, 3, 1, 1]
-            )
+        st.dataframe(
 
-            with c1:
+            historial_tabla,
 
-                st.write(
-                    row["CLUES"]
-                )
+            use_container_width=True,
 
-            with c2:
+            hide_index=True,
 
-                st.write(
-                    row["Tipo"]
-                )
-
-            with c3:
-
-                st.write(
-                    row["Archivo"]
-                )
-
-            with c4:
-
-                st.link_button(
-                    "👁 Abrir",
-                    row["Link"],
-                    key=f"abrir_inv_{i}"
-                )
-
-            with c5:
-
-                st.write(
-                    row[
-                        "Inventario físico"
-                    ]
-                )
+            height=500
+        )
 
     except Exception as e:
 
