@@ -301,59 +301,29 @@ def guardar_inventario_sheets(
         body=body
     ).execute()
 
+# =========================
+# GUARDAR SUPERVISIÓN MASIVA
+# =========================
+
 def guardar_supervision_sheets(
-    fecha,
-    entidad,
-    clues,
-    almacen,
-    fecha_supervision,
-    nombre_verificador,
-    cargo_verificador,
-    nombre_almacen,
-    cargo_almacen,
-    concepto,
-    contiene,
-    piezas,
-    monto,
-    firmado,
-    existe,
-    dif_mas,
-    dif_menos,
-    observaciones
+    rows
 ):
 
-    values = [[
-        str(fecha),
-        entidad,
-        clues,
-        almacen,
-        str(fecha_supervision),
-        nombre_verificador,
-        cargo_verificador,
-        nombre_almacen,
-        cargo_almacen,
-        concepto,
-        contiene,
-        piezas,
-        monto,
-        firmado,
-        existe,
-        dif_mas,
-        dif_menos,
-        observaciones
-    ]]
-
     body = {
-        "values": values
+        "values": rows
     }
 
     sheets_service.spreadsheets().values().append(
+
         spreadsheetId=EXCEL_FILE_ID,
+
         range="SUPERVISION!A:R",
+
         valueInputOption="USER_ENTERED",
+
         body=body
-    ).execute()
-# =========================
+
+    ).execute()# =========================
 # HISTORIAL SUPERVISION
 # =========================
 
@@ -2624,105 +2594,113 @@ if modulo == "🕵 Supervisión":
 
     if generar_cedula:
 
+        rows = []
+
         for concepto in conceptos_generales:
 
-            guardar_supervision_sheets(
+            rows.append([
 
-                fecha=pd.Timestamp.now(),
+                str(pd.Timestamp.now()),
 
-                entidad=entidad_sup,
+                entidad_sup,
 
-                clues=clues_sup,
+                clues_sup,
 
-                almacen=almacen_sup,
+                almacen_sup,
 
-                fecha_supervision=fecha_supervision,
+                str(fecha_supervision),
 
-                nombre_verificador=nombre_verificador,
+                nombre_verificador,
 
-                cargo_verificador=cargo_verificador,
+                cargo_verificador,
 
-                nombre_almacen=nombre_almacen,
+                nombre_almacen,
 
-                cargo_almacen=cargo_almacen,
+                cargo_almacen,
 
-                concepto=concepto,
+                concepto,
 
-                contiene=st.session_state[
+                st.session_state[
                     f"{concepto}_contiene"
                 ],
 
-                piezas=st.session_state[
+                st.session_state[
                     f"{concepto}_piezas"
                 ],
 
-                monto=st.session_state[
+                st.session_state[
                     f"{concepto}_monto"
                 ],
 
-                firmado=st.session_state[
+                st.session_state[
                     f"{concepto}_firmado"
                 ],
 
-                existe="",
+                "",
 
-                dif_mas="",
+                "",
 
-                dif_menos="",
+                "",
 
-                observaciones=st.session_state[
+                st.session_state[
                     f"{concepto}_obs"
                 ]
-            )
+            ])
 
         for concepto in conceptos_diferencias:
 
-            guardar_supervision_sheets(
+            rows.append([
 
-                fecha=pd.Timestamp.now(),
+                str(pd.Timestamp.now()),
 
-                entidad=entidad_sup,
+                entidad_sup,
 
-                clues=clues_sup,
+                clues_sup,
 
-                almacen=almacen_sup,
+                almacen_sup,
 
-                fecha_supervision=fecha_supervision,
+                str(fecha_supervision),
 
-                nombre_verificador=nombre_verificador,
+                nombre_verificador,
 
-                cargo_verificador=cargo_verificador,
+                cargo_verificador,
 
-                nombre_almacen=nombre_almacen,
+                nombre_almacen,
 
-                cargo_almacen=cargo_almacen,
+                cargo_almacen,
 
-                concepto=concepto,
+                concepto,
 
-                contiene="",
+                "",
 
-                piezas="",
+                "",
 
-                monto="",
+                "",
 
-                firmado="",
+                "",
 
-                existe=st.session_state[
+                st.session_state[
                     f"{concepto}_existe"
                 ],
 
-                dif_mas=st.session_state[
+                st.session_state[
                     f"{concepto}_mas"
                 ],
 
-                dif_menos=st.session_state[
+                st.session_state[
                     f"{concepto}_menos"
                 ],
 
-                observaciones=st.session_state[
+                st.session_state[
                     f"{concepto}_obs_2"
                 ]
-            )
+            ])
+
+        guardar_supervision_sheets(
+            rows
+        )
+
+        st.cache_data.clear()
 
         st.success(
             "✅ Supervisión guardada correctamente"
