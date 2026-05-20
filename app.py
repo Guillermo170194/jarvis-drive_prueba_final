@@ -2806,6 +2806,77 @@ if modulo == "🕵 Supervisión":
         )
 
         os.remove(pdf_file)
+    st.markdown("---")
+
+    st.markdown(
+        "## 📚 Historial supervisiones"
+    )
+
+    try:
+
+        historial_supervision = (
+            historial_supervision_base.copy()
+        )
+
+        if historial_supervision.empty:
+
+            st.warning(
+                "Sin historial supervisiones"
+            )
+
+        else:
+
+            historial_tabla = (
+                historial_supervision[
+                    [
+                        "Fecha",
+                        "Entidad",
+                        "CLUES",
+                        "Almacen",
+                        "Verificador"
+                    ]
+                ]
+                .copy()
+            )
+
+            st.dataframe(
+
+                historial_tabla,
+
+                use_container_width=True,
+
+                hide_index=True,
+
+                height=400
+            )
+
+            st.markdown("---")
+
+            opciones_pdf = (
+                historial_supervision[
+                    "PDF"
+                ]
+                .astype(str)
+                .tolist()
+            )
+
+            pdf_seleccionado = st.selectbox(
+                "📄 Abrir supervisión",
+                opciones_pdf
+            )
+
+            if st.button(
+                "👁 Abrir PDF supervisión"
+            ):
+
+                st.link_button(
+                    "📄 Abrir PDF",
+                    pdf_seleccionado
+                )
+
+    except Exception as e:
+
+        st.error(e)
 
 # =========================
 # INVENTARIOS
