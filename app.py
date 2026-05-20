@@ -1571,8 +1571,9 @@ if modulo == "📚 Documental":
             )
             st.cache_data.clear()
 
-            st.success(
+            st.toast(
                 "✅ Documento guardado correctamente"
+                icon="✅"
             )
 
             st.rerun()
@@ -2798,8 +2799,9 @@ if modulo == "🕵 Supervisión":
 
         st.cache_data.clear()
 
-        st.success(
-            "✅ Supervisión guardada correctamente"
+        st.toast(
+            "✅ Supervisión guardada correctamente
+            icon="✅"
         )
 
         st.rerun()
@@ -3505,8 +3507,9 @@ if modulo == "📦 Inventarios":
 
             st.cache_data.clear()
 
-            st.success(
+            st.toast(
                 "✅ Inventarios guardados"
+                icon="✅"
             )
 
             st.rerun()
