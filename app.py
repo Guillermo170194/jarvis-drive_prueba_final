@@ -2734,7 +2734,7 @@ if modulo == "🕵 Supervisión":
                 "",
 
                 st.session_state[
-                     f"{concepto}_contiene"
+                    f"validacion_{concepto}_existe"
                 ],
 
                 st.session_state[
