@@ -2898,6 +2898,13 @@ if modulo == "🕵 Supervisión":
 
         else:
 
+            historial_supervision["Fecha"] = pd.to_datetime(
+
+                historial_supervision["Fecha"],
+
+                errors="coerce"
+            )
+
             historial_supervision = (
                 historial_supervision.sort_values(
                     "Fecha",
