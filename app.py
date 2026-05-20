@@ -2509,7 +2509,7 @@ if modulo == "🕵 Supervisión":
                     "Monto",
                     min_value=0.0,
                     step=1.0,
-                    format="%.0f"
+                    format="%.0f",
                     key=f"{concepto}_monto"
                 )
 
@@ -2563,7 +2563,7 @@ if modulo == "🕵 Supervisión":
                     "Dif más",
                     min_value=0.0,
                     step=1.0,
-                    format="%.2f",
+                    format="%.0f",
                     key=f"{concepto}_mas"
                 )
 
