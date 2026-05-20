@@ -2876,12 +2876,19 @@ if modulo == "🕵 Supervisión":
 
         st.cache_data.clear()
 
-        st.toast(
-            "✅ Supervisión guardada correctamente",
-            icon="✅"
+        st.success(
+            "✅ Supervisión guardada correctamente"
         )
 
-        st.rerun()
+        st.balloons()
+
+        st.link_button(
+            "📂 Abrir PDF",
+            pdf_link
+        )
+
+        st.cache_data.clear()
+
     st.markdown("---")
 
     st.markdown(
