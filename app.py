@@ -422,7 +422,7 @@ def borrar_archivo_drive(link):
 
 def borrar_fila_historial(row_number):
 
-    historial = descargar_historial()
+    historial = historial_base.copy()
 
     historial = historial.drop(
         historial.index[row_number - 1]
@@ -3352,7 +3352,7 @@ if modulo == "📦 Inventarios":
 
             for tipo_archivo, archivo_actual in archivos_subidos:
                 historial_inv = (
-                    descargar_inventarios()
+                    inventarios_base.copy()
                 )
 
                 existente = historial_inv[
