@@ -1627,54 +1627,91 @@ if modulo == "📚 Documental":
         "## 📚 Historial documental"
     )
 
-    try:
+try:
 
-        historial = historial_base.copy()
+    historial = historial_base.copy()
 
-        for i, row in historial.iterrows():
+    if historial.empty:
 
-            c1, c2, c3, c4, c5, c6 = st.columns(
-                [2, 2, 2, 2, 1, 1]
+        st.warning(
+            "Sin historial documental"
+        )
+
+    else:
+
+        historial_tabla = historial[
+            [
+                "Fecha",
+                "Entidad",
+                "CLUES",
+                "Tipo",
+                "Archivo"
+            ]
+        ].copy()
+
+        st.dataframe(
+
+            historial_tabla,
+
+            use_container_width=True,
+
+            hide_index=True,
+
+            height=500
+        )
+
+        st.markdown("---")
+
+        st.markdown(
+            "### 🗑 Eliminar documento"
+        )
+
+        opciones_eliminar = (
+            historial[
+                "Archivo"
+            ]
+            .astype(str)
+            .tolist()
+        )
+
+        archivo_eliminar = st.selectbox(
+            "Selecciona archivo",
+            opciones_eliminar
+        )
+
+        if st.button(
+            "🗑 Eliminar seleccionado"
+        ):
+
+            fila_eliminar = historial[
+                historial["Archivo"]
+                .astype(str)
+                == str(archivo_eliminar)
+            ].iloc[0]
+
+            borrar_archivo_drive(
+                fila_eliminar["Link"]
             )
 
-            with c1:
-                st.write(row["Fecha"])
+            indice = (
+                historial[
+                    historial["Archivo"]
+                    .astype(str)
+                    == str(archivo_eliminar)
+                ].index[0]
+            )
 
-            with c2:
-                st.write(row["Entidad"])
+            borrar_fila_historial(
+                indice + 1
+            )
 
-            with c3:
-                st.write(row["CLUES"])
+            st.cache_data.clear()
 
-            with c4:
-                st.write(row["Tipo"])
+            st.rerun()
 
-            with c5:
+except Exception as e:
 
-                st.link_button(
-                    "👁",
-                    row["Link"]
-                )
-
-            with c6:
-
-                if st.button(
-                    "🗑",
-                    key=f"delete_{i}"
-                ):
-
-                    borrar_archivo_drive(
-                        row["Link"]
-                    )
-
-                    borrar_fila_historial(
-                        i + 1
-                    )
-
-                    st.cache_data.clear()
-
-                    st.rerun()
-
+    st.error(e)
     except Exception as e:
 
         st.error(e)
