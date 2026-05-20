@@ -3426,7 +3426,7 @@ if modulo == "📦 Inventarios":
 
     try:
 
-        historial_inv = descargar_inventarios()
+        historial_inv = inventarios_base.copy()
 
         for i, row in historial_inv.iterrows():
 
