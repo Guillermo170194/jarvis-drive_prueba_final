@@ -2855,22 +2855,68 @@ if modulo == "🕵 Supervisión":
 
             st.markdown("---")
 
-            opciones_pdf = (
+            historial_supervision[
+                "Etiqueta"
+            ] = (
+
                 historial_supervision[
-                    "PDF"
+                    "Fecha"
                 ]
                 .astype(str)
-                .tolist()
+                .str[:10]
+
+                + " | "
+
+                + historial_supervision[
+                    "Entidad"
+                ]
+                .astype(str)
+
+                + " | "
+
+                + historial_supervision[
+                    "Almacen"
+                ]
+                .astype(str)
+
+                + " | "
+
+                + historial_supervision[
+                    "CLUES"
+                ]
+                .astype(str)
+
+                + " | "
+
+                + historial_supervision[
+                    "Verificador"
+                ]
+                .astype(str)
             )
 
-            pdf_seleccionado = st.selectbox(
-                "📄 Abrir supervisión",
-                opciones_pdf
+            seleccion_supervision = st.selectbox(
+
+                "🔎 Buscar supervisión",
+
+                sorted(
+                    historial_supervision[
+                        "Etiqueta"
+                    ]
+                    .astype(str)
+                    .unique()
+                )
             )
+
+            fila_pdf = historial_supervision[
+                historial_supervision[
+                    "Etiqueta"
+                ]
+                == seleccion_supervision
+            ].iloc[0]
 
             st.link_button(
                 "📄 Abrir PDF supervisión",
-                pdf_seleccionado
+                fila_pdf["PDF"]
             )
 
     except Exception as e:
