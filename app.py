@@ -2509,7 +2509,7 @@ if modulo == "🕵 Supervisión":
                     "Monto",
                     min_value=0.0,
                     step=1.0,
-                    format="%.2f",
+                    format="%.0f"
                     key=f"{concepto}_monto"
                 )
 
@@ -2910,8 +2910,20 @@ if modulo == "🕵 Supervisión":
             )
 
             historial_supervision = (
+
+                historial_supervision[
+
+                    historial_supervision["Fecha"].notna()
+
+                ]
+            )
+
+            historial_supervision = (
+
                 historial_supervision.sort_values(
-                    "Fecha",
+
+                    by="Fecha",
+
                     ascending=False
                 )
             )
@@ -2947,9 +2959,11 @@ if modulo == "🕵 Supervisión":
                 with c1:
 
                     st.write(
-                        row["Fecha"]
-                    )
 
+                        row["Fecha"].strftime(
+                            "%d/%m/%Y"
+                        )
+                    )
                 with c2:
 
                     st.write(
