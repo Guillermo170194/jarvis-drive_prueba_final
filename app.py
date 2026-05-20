@@ -2398,6 +2398,10 @@ if modulo == "🕵 Supervisión":
             "📅 Fecha supervisión"
         )
 
+        fecha_supervision = pd.to_datetime(
+            fecha_supervision
+        )
+
         st.markdown("---")
 
         # =========================
