@@ -2700,11 +2700,108 @@ if modulo == "🕵 Supervisión":
             rows
         )
 
+        # =========================
+        # GENERAR PDF
+        # =========================
+
+        pdf_file = generar_pdf_supervision(
+
+            entidad=entidad_sup,
+
+            clues=clues_sup,
+
+            almacen=almacen_sup,
+
+            fecha_supervision=fecha_supervision,
+
+            nombre_verificador=nombre_verificador,
+
+            cargo_verificador=cargo_verificador,
+
+            nombre_almacen=nombre_almacen,
+
+            cargo_almacen=cargo_almacen,
+
+            conceptos_generales=conceptos_generales,
+
+            conceptos_diferencias=conceptos_diferencias,
+
+            firma_verificador=firma_verificador,
+
+            firma_almacen=firma_almacen
+        )
+
+        # =========================
+        # SUBIR PDF DRIVE
+        # =========================
+
+        carpeta_supervision = (
+            obtener_carpeta_supervision(
+                entidad_sup,
+                clues_sup
+            )
+        )
+
+        file_metadata = {
+
+            "name": pdf_file,
+
+            "parents": [
+                carpeta_supervision
+            ]
+        }
+
+        media = MediaFileUpload(
+            pdf_file,
+            mimetype="application/pdf"
+        )
+
+        uploaded_pdf = (
+            drive_service.files()
+            .create(
+                body=file_metadata,
+                media_body=media,
+                fields="id, webViewLink",
+                supportsAllDrives=True
+            )
+            .execute()
+        )
+
+        pdf_link = uploaded_pdf[
+            "webViewLink"
+        ]
+
+        # =========================
+        # HISTORIAL SUPERVISIÓN
+        # =========================
+
+        guardar_historial_supervision(
+
+            fecha=pd.Timestamp.now(),
+
+            entidad=entidad_sup,
+
+            clues=clues_sup,
+
+            almacen=almacen_sup,
+
+            verificador=nombre_verificador,
+
+            pdf_link=pdf_link
+        )
+
         st.cache_data.clear()
 
         st.success(
             "✅ Supervisión guardada correctamente"
         )
+
+        st.link_button(
+            "📄 Abrir PDF",
+            pdf_link
+        )
+
+        os.remove(pdf_file)
 
 # =========================
 # INVENTARIOS
