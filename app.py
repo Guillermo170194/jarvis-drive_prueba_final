@@ -27,6 +27,8 @@ import io
 
 import pandas as pd
 
+import numpy as np
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build	
 from googleapiclient.http import (
@@ -686,6 +688,12 @@ try:
 
     excel_file.seek(0)
 
+    supervision_detalle_base = pd.read_excel(
+        excel_file,
+        sheet_name="SUPERVISION"
+    )
+    excel_file.seek(0)
+
     historial_supervision_base = pd.read_excel(
         excel_file,
         sheet_name="HISTORIAL_SUPERVISION"
@@ -700,6 +708,8 @@ except Exception as e:
     historial_base = pd.DataFrame()
 
     inventarios_base = pd.DataFrame()
+
+    supervision_detalle_base = pd.DataFrame()
 
     historial_supervision_base = pd.DataFrame()
 # =========================
@@ -1767,8 +1777,8 @@ def generar_pdf_supervision(
 
         encabezado = Image(
             logo_path,
-            width=720,
-            height=45
+            width=640,
+            height=38
         )
 
         elementos.append(
@@ -3033,6 +3043,265 @@ if modulo == "🕵 Supervisión":
     st.markdown(
         "## 🕵 Historial supervisiones"
     )
+
+    # =========================
+    # ANALISIS SUPERVISIONES
+    # =========================
+
+    st.markdown("---")
+
+    st.markdown(
+        "## 📊 Análisis supervisiones"
+    )
+
+    try:
+
+        df_analisis = (
+            supervision_detalle_base.copy()
+        )
+
+        if not df_analisis.empty:
+
+            # =========================
+            # RESULTADO
+            # =========================
+
+            df_analisis["Resultado"] = np.where(
+
+                df_analisis[
+                    "Observaciones"
+                ]
+                .astype(str)
+                .str.lower()
+                .str.strip()
+                .str.startswith(
+                    "incorrecto"
+                ),
+
+                "❌",
+
+                "✅"
+            )
+
+            # =========================
+            # NORMALIZAR CONCEPTOS
+            # =========================
+
+            df_analisis["Concepto"] = (
+
+                df_analisis["Concepto"]
+
+                .replace({
+
+                    "ANEXO 1.- LISTADO GRAL": "A1",
+
+                    "ANEXO 2.- IMSS B": "A2",
+
+                    "ANEXO 3.- PROPIOS": "A3",
+
+                    "Acta de conclusión": "AC",
+
+                    "ANEXO 5.- ACTA DE INICIO": "AI",
+
+                    "ANEXO 4.- REPORTE DE DIF": "A4",
+
+                    "ANEXO 6.- REPORTE LENTO Y NULO": "A6",
+
+                    "ANEXO 7.- REPORTE CADUCOS": "A7",
+
+                    "ANEXO 8.- REP DE PROX A CADUCAR": "A8",
+
+                    "EXCEL": "Excel",
+
+                    "PDF": "PDF",
+
+                    "FISICO": "Físico"
+                })
+
+            )
+
+            # =========================
+            # RESUMEN EJECUTIVO
+            # =========================
+
+            total_supervisiones = (
+
+                df_analisis[
+                    "ID_SUPERVISION"
+                ]
+                .nunique()
+            )
+
+            total_clues = (
+
+                df_analisis[
+                    "CLUES"
+                ]
+                .nunique()
+            )
+
+            total_correctos = (
+
+                df_analisis[
+                    "Resultado"
+                ]
+                == "✅"
+
+            ).sum()
+
+            total_incorrectos = (
+
+                df_analisis[
+                    "Resultado"
+                ]
+                == "❌"
+
+            ).sum()
+
+            total_registros = (
+                total_correctos
+                + total_incorrectos
+            )
+
+            if total_registros > 0:
+
+                cumplimiento = round(
+
+                    (
+                        total_correctos
+                        / total_registros
+                    ) * 100,
+
+                    1
+                )
+
+            else:
+
+                cumplimiento = 0
+
+            st.markdown(
+                "### 📌 Resumen ejecutivo"
+            )
+
+            c1, c2, c3, c4, c5 = st.columns(5)
+
+            with c1:
+
+                st.metric(
+                    "Supervisiones",
+                    total_supervisiones
+                )
+
+            with c2:
+
+                st.metric(
+                    "CLUES",
+                    total_clues
+                )
+
+            with c3:
+
+                st.metric(
+                    "Correctos",
+                    total_correctos
+                )
+
+            with c4:
+
+                st.metric(
+                    "Incorrectos",
+                    total_incorrectos
+                )
+
+            with c5:
+
+                st.metric(
+                    "% Cumplimiento",
+                    f"{cumplimiento}%"
+                )
+
+            st.markdown("---")
+
+            # =========================
+            # MATRIZ CUMPLIMIENTO
+            # =========================
+
+            st.markdown(
+                "### 📋 Matriz cumplimiento"
+            )
+
+            matriz = (
+
+                df_analisis
+
+                .pivot_table(
+
+                    index="CLUES",
+
+                    columns="Concepto",
+
+                    values="Resultado",
+
+                    aggfunc="first"
+
+                )
+
+                .fillna("-")
+
+                .reset_index()
+            )
+
+            columnas_revision = [
+
+                col for col in matriz.columns
+
+                if col != "CLUES"
+            ]
+
+            matriz["%"] = (
+
+                matriz[
+                    columnas_revision
+                ]
+
+                .apply(
+
+                    lambda row:
+
+                    round(
+
+                        (
+                            (
+                                row == "✅"
+                            ).sum()
+
+                            /
+
+                            len(columnas_revision)
+
+                        ) * 100,
+
+                        1
+                    ),
+
+                    axis=1
+                )
+            )
+
+            st.dataframe(
+
+                matriz,
+
+                use_container_width=True,
+
+                hide_index=True,
+
+                height=500
+            )
+
+    except Exception as e:
+
+        st.error(e)
 
     try:
 
