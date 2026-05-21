@@ -310,7 +310,7 @@ def guardar_supervision_sheets(
 
         spreadsheetId=EXCEL_FILE_ID,
 
-        range="SUPERVISION!A:S",
+        range="SUPERVISION!A:R",
 
         valueInputOption="USER_ENTERED",
 
@@ -2415,10 +2415,6 @@ if modulo == "🕵 Supervisión":
             "📅 Fecha supervisión"
         )
 
-        fecha_supervision = pd.to_datetime(
-            fecha_supervision
-        )
-
         st.markdown("---")
 
         # =========================
@@ -2990,7 +2986,9 @@ if modulo == "🕵 Supervisión":
 
         guardar_historial_supervision(
 
-            fecha=fecha_supervision,
+            fecha=fecha_supervision.strftime(
+                "%d/%m/%Y"
+            ),
 
             entidad=entidad_sup,
 
