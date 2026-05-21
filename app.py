@@ -16,10 +16,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from reportlab.platypus.flowables import Image
 
-from reportlab.pdfbase import pdfmetrics
-
-from reportlab.pdfbase.ttfonts import TTFont
-
 from reportlab.lib.enums import TA_CENTER
 
 from reportlab.lib.styles import ParagraphStyle
@@ -314,7 +310,7 @@ def guardar_supervision_sheets(
 
         spreadsheetId=EXCEL_FILE_ID,
 
-        range="SUPERVISION!A:R",
+        range="SUPERVISION!A:S",
 
         valueInputOption="USER_ENTERED",
 
@@ -330,7 +326,8 @@ def guardar_historial_supervision(
     clues,
     almacen,
     verificador,
-    pdf_link
+    pdf_link,
+    id_supervision
 ):
 
     values = [[
@@ -339,7 +336,8 @@ def guardar_historial_supervision(
         clues,
         almacen,
         verificador,
-        pdf_link
+        pdf_link,
+        id_supervision
     ]]
 
     body = {
@@ -350,7 +348,7 @@ def guardar_historial_supervision(
 
         spreadsheetId=EXCEL_FILE_ID,
 
-        range="HISTORIAL_SUPERVISION!A:F",
+        range="HISTORIAL_SUPERVISION!A:G",
 
         valueInputOption="USER_ENTERED",
 
@@ -2034,7 +2032,7 @@ def generar_pdf_supervision(
             90,
             110,
             70,
-            180
+            260
         ]
     )
 
@@ -2125,13 +2123,13 @@ def generar_pdf_supervision(
                 f"validacion_{concepto}_existe"
             ],
 
-            "{:,.2f}".format(
+            "{:,.0f}".format(
                 st.session_state[
                     f"{concepto}_mas"
                 ]
             ),
 
-            "{:,.2f}".format(
+            "{:,.0f}".format(
                 st.session_state[
                     f"{concepto}_menos"
                 ]
@@ -2391,7 +2389,21 @@ if modulo == "🕵 Supervisión":
 
     st.info(
         f"🏬 ALMACÉN: {almacen_sup}"
+
     )
+    import uuid
+
+    if "id_supervision" not in st.session_state:
+
+        st.session_state[
+            "id_supervision"
+        ] = str(
+            uuid.uuid4()
+        )[:8]
+
+    id_supervision = st.session_state[
+        "id_supervision"
+    ]
     with st.form(
 
         "form_supervision",
@@ -2514,7 +2526,7 @@ if modulo == "🕵 Supervisión":
                     "Monto",
                     min_value=0.0,
                     step=1.0,
-                    format="%.0f",
+                    format="%.2f",
                     key=f"{concepto}_monto"
                 )
 
@@ -2668,20 +2680,33 @@ if modulo == "🕵 Supervisión":
 
     if guardar_supervision:
 
-        if st.session_state.get(
-            "supervision_guardada",
-            False
+        token_actual = (
+
+            f"{clues_sup}_"
+
+            f"{fecha_supervision}_"
+
+            f"{id_supervision}"
+        )
+
+        if (
+
+            st.session_state.get(
+                "ultimo_guardado"
+            )
+
+            == token_actual
         ):
 
             st.warning(
-                "⚠ La supervisión ya fue guardada."
+                "⚠ Supervisión ya guardada"
             )
 
             st.stop()
 
         st.session_state[
-            "supervision_guardada"
-        ] = True
+            "ultimo_guardado"
+        ] = token_actual
 
         rows = []
 
@@ -2693,7 +2718,9 @@ if modulo == "🕵 Supervisión":
 
             rows.append([
 
-                str(fecha_supervision),
+                fecha_supervision.strftime(
+                    "%d/%m/%Y"
+                ),
 
                 entidad_sup,
 
@@ -2733,9 +2760,27 @@ if modulo == "🕵 Supervisión":
 
                 "",
 
-                st.session_state[
-                    f"{concepto}_obs"
-                ]
+                    str(
+
+                        st.session_state[
+                            f"{concepto}_obs"
+                        ]
+
+                    ).replace(
+                        "\n",
+                        " "
+                    ).replace(
+                        "\t",
+                        " "
+                    ).replace(
+                        "|",
+                        "-"
+                    ).replace(
+                        ";",
+                        ","
+                    ),
+
+                    id_supervision
             ])
 
         # =========================
@@ -2746,7 +2791,9 @@ if modulo == "🕵 Supervisión":
 
             rows.append([
 
-                str(fecha_supervision),
+                fecha_supervision.strftime(
+                    "%d/%m/%Y"
+                ),
 
                 entidad_sup,
 
@@ -2784,9 +2831,27 @@ if modulo == "🕵 Supervisión":
                     f"{concepto}_menos"
                 ],
 
-                st.session_state[
-                    f"validacion_{concepto}_obs"
-                ]
+                    str(
+
+                        st.session_state[
+                            f"validacion_{concepto}_obs"
+                        ]
+
+                    ).replace(
+                        "\n",
+                        " "
+                    ).replace(
+                        "\t",
+                        " "
+                    ).replace(
+                        "|",
+                        "-"
+                    ).replace(
+                        ";",
+                        ","
+                    ),
+
+                    id_supervision
             ])
 
         # =========================
@@ -2797,7 +2862,9 @@ if modulo == "🕵 Supervisión":
 
             rows.append([
 
-                str(fecha_supervision),
+                fecha_supervision.strftime(
+                    "%d/%m/%Y"
+                ),
 
                 entidad_sup,
 
@@ -2831,9 +2898,27 @@ if modulo == "🕵 Supervisión":
 
                 0,
 
-                st.session_state[
-                    f"{concepto}_obs_2"
-                ]
+                    str(
+
+                        st.session_state[
+                            f"{concepto}_obs_2"
+                        ]
+
+                    ).replace(
+                        "\n",
+                        " "
+                    ).replace(
+                        "\t",
+                        " "
+                    ).replace(
+                        "|",
+                        "-"
+                    ).replace(
+                        ";",
+                        ","
+                    ),
+
+                    id_supervision
             ])
 
         guardar_supervision_sheets(
@@ -2848,7 +2933,9 @@ if modulo == "🕵 Supervisión":
 
             almacen=almacen_sup,
 
-            fecha_supervision=fecha_supervision,
+            fecha_supervision=fecha_supervision.strftime(
+                "%d-%m-%Y"
+            ),
 
             nombre_verificador=nombre_verificador,
 
@@ -2913,13 +3000,23 @@ if modulo == "🕵 Supervisión":
 
             verificador=nombre_verificador,
 
-            pdf_link=pdf_link
+            pdf_link=pdf_link,
+            
+            id_supervision=id_supervision
         )
 
         st.cache_data.clear()
 
         st.success(
             "✅ Supervisión guardada correctamente"
+        )
+        st.session_state.pop(
+            "id_supervision",
+            None
+        )
+        st.session_state.pop(
+            "ultimo_guardado",
+            None
         )
 
         st.balloons()
@@ -2928,6 +3025,10 @@ if modulo == "🕵 Supervisión":
             "📂 Abrir PDF",
             pdf_link
         )
+        st.toast(
+
+            "🔄 Actualizando historial..."
+        )        
 
     st.markdown("---")
 
@@ -2952,6 +3053,8 @@ if modulo == "🕵 Supervisión":
             historial_supervision["Fecha"] = pd.to_datetime(
 
                 historial_supervision["Fecha"],
+
+                format="%d/%m/%Y",
 
                 errors="coerce"
             )
