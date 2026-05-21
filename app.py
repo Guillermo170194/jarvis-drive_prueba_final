@@ -2642,8 +2642,19 @@ if modulo == "🕵 Supervisión":
 
         st.markdown("---")
 
+        st.text("")
+
         guardar_supervision = st.form_submit_button(
-            "📤 Guardar supervisión"
+
+            "📤 Guardar supervisión",
+
+            use_container_width=True,
+
+            type="primary"
+        )
+
+        st.caption(
+            "⚠ La supervisión solo se guardará al dar clic en el botón."
         )
 
     # =========================
