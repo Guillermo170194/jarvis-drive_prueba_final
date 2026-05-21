@@ -2392,7 +2392,12 @@ if modulo == "🕵 Supervisión":
     st.info(
         f"🏬 ALMACÉN: {almacen_sup}"
     )
-    with st.form("form_supervision"):
+    with st.form(
+
+        "form_supervision",
+
+        enter_to_submit=False
+    ):
 
         fecha_supervision = st.date_input(
             "📅 Fecha supervisión"
@@ -2573,7 +2578,7 @@ if modulo == "🕵 Supervisión":
                     "Dif menos",
                     min_value=0.0,
                     step=1.0,
-                    format="%.2f",
+                    format="%.0f",
                     key=f"{concepto}_menos"
                 )
 
@@ -2663,6 +2668,21 @@ if modulo == "🕵 Supervisión":
 
     if guardar_supervision:
 
+        if st.session_state.get(
+            "supervision_guardada",
+            False
+        ):
+
+            st.warning(
+                "⚠ La supervisión ya fue guardada."
+            )
+
+            st.stop()
+
+        st.session_state[
+            "supervision_guardada"
+        ] = True
+
         rows = []
 
         # =========================
@@ -2718,6 +2738,10 @@ if modulo == "🕵 Supervisión":
                 ]
             ])
 
+        # =========================
+        # DIFERENCIAS
+        # =========================
+
         for concepto in conceptos_diferencias:
 
             rows.append([
@@ -2765,6 +2789,10 @@ if modulo == "🕵 Supervisión":
                 ]
             ])
 
+        # =========================
+        # VALIDACIÓN DOCUMENTAL
+        # =========================
+
         for concepto in conceptos_validacion:
 
             rows.append([
@@ -2811,6 +2839,7 @@ if modulo == "🕵 Supervisión":
         guardar_supervision_sheets(
             rows
         )
+
         pdf_generado = generar_pdf_supervision(
 
             entidad=entidad_sup,
@@ -2837,6 +2866,7 @@ if modulo == "🕵 Supervisión":
 
             firma_almacen=firma_almacen
         )
+
         folder_id = obtener_carpeta_supervision(
             entidad_sup,
             clues_sup
@@ -2866,6 +2896,7 @@ if modulo == "🕵 Supervisión":
         pdf_link = uploaded_file[
             "webViewLink"
         ]
+
         if os.path.exists(pdf_generado):
 
             os.remove(pdf_generado)
@@ -2897,8 +2928,6 @@ if modulo == "🕵 Supervisión":
             "📂 Abrir PDF",
             pdf_link
         )
-
-        st.cache_data.clear()
 
     st.markdown("---")
 
