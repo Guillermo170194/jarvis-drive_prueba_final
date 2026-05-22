@@ -3102,7 +3102,7 @@ if modulo == "🕵 Supervisión":
             # RESULTADO
             # =========================
 
-            df_analisis["Resultado"] = (
+            df_analisis["RESULTADO"] = (
 
                 df_analisis["RESULTADO"]
 
@@ -3186,7 +3186,7 @@ if modulo == "🕵 Supervisión":
 
                 .groupby(
                     "ID_SUPERVISION"
-                )["Resultado"]
+                )["RESULTADO"]
 
                 .apply(
 
@@ -3382,7 +3382,7 @@ if modulo == "🕵 Supervisión":
 
                     columns="Concepto",
 
-                    values="Resultado",
+                    values="RESULTADO",
 
                     aggfunc="last"
 
