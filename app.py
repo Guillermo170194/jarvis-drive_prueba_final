@@ -3309,6 +3309,16 @@ if modulo == "🕵 Supervisión":
             st.markdown(
                 "### 📋 Matriz cumplimiento"
             )
+            st.caption(
+
+                " | ".join([
+
+                    f"{k}: {v}"
+
+                    for k, v in descripcion_anexos.items()
+
+                ])
+            )
             df_analisis["Fecha"] = pd.to_datetime(
 
                 df_analisis["Fecha"],
@@ -3326,6 +3336,32 @@ if modulo == "🕵 Supervisión":
                     by="Fecha"
                 )
             )
+            descripcion_anexos = {
+
+                "A1": "Listado general",
+
+                "A2": "Inventario IMSS B",
+
+                "A3": "Inventario propios",
+
+                "AC": "Acta conclusión",
+
+                "AI": "Acta inicio",
+
+                "A4": "Reporte diferencias",
+
+                "A6": "Lento y nulo",
+
+                "A7": "Caducos",
+
+                "A8": "Próx caducar",
+
+                "Excel": "Archivo Excel",
+
+                "PDF": "Archivo PDF",
+
+                "Físico": "Inventario físico"
+            }
 
             matriz = (
 
@@ -3333,7 +3369,15 @@ if modulo == "🕵 Supervisión":
 
                 .pivot_table(
 
-                    index="CLUES",
+                    index=[
+
+                        "Entidad",
+
+                        "CLUES",
+
+                        "Almacen"
+
+                    ],
 
                     columns="Concepto",
 
@@ -3438,7 +3482,7 @@ if modulo == "🕵 Supervisión":
 
                     by="Fecha",
 
-                    ascending=False
+                    ascending=True
                 )
             )
 
