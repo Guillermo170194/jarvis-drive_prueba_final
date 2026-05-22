@@ -29,6 +29,8 @@ import pandas as pd
 
 import numpy as np
 
+import uuid
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build	
 from googleapiclient.http import (
@@ -312,7 +314,7 @@ def guardar_supervision_sheets(
 
         spreadsheetId=EXCEL_FILE_ID,
 
-        range="SUPERVISION!A:R",
+        range="SUPERVISION!A:S",
 
         valueInputOption="USER_ENTERED",
 
@@ -2401,7 +2403,7 @@ if modulo == "🕵 Supervisión":
         f"🏬 ALMACÉN: {almacen_sup}"
 
     )
-    import uuid
+    
 
     if "id_supervision" not in st.session_state:
 
@@ -2548,6 +2550,22 @@ if modulo == "🕵 Supervisión":
                 "Observaciones",
                 key=f"{concepto}_obs"
             )
+            st.selectbox(
+
+                "Resultado",
+
+                [
+
+                    "CORRECTO",
+
+                    "INCORRECTO",
+
+                    "SIN OBSERVACIONES"
+
+                ],
+
+                key=f"{concepto}_resultado"
+            )
 
             st.markdown("---")
 
@@ -2605,6 +2623,23 @@ if modulo == "🕵 Supervisión":
                 key=f"validacion_{concepto}_obs"
             )
 
+            st.selectbox(
+
+                "Resultado",
+
+                [
+
+                    "CORRECTO",
+
+                    "INCORRECTO",
+
+                    "SIN OBSERVACIONES"
+
+                ],
+
+                key=f"{concepto}_resultado"
+            )
+
             st.markdown("---")
 
         # =========================
@@ -2639,6 +2674,23 @@ if modulo == "🕵 Supervisión":
             st.text_area(
                 "Observaciones",
                 key=f"{concepto}_obs_2"
+            )
+
+            st.selectbox(
+
+                "Resultado",
+
+                [
+
+                    "CORRECTO",
+
+                    "INCORRECTO",
+
+                    "SIN OBSERVACIONES"
+
+                ],
+
+                key=f"{concepto}_resultado"
             )
 
             st.markdown("---")
@@ -2686,33 +2738,6 @@ if modulo == "🕵 Supervisión":
 
     if guardar_supervision:
 
-        token_actual = (
-
-            f"{clues_sup}_"
-
-            f"{fecha_supervision}_"
-
-            f"{id_supervision}"
-        )
-
-        if (
-
-            st.session_state.get(
-                "ultimo_guardado"
-            )
-
-            == token_actual
-        ):
-
-            st.warning(
-                "⚠ Supervisión ya guardada"
-            )
-
-            st.stop()
-
-        st.session_state[
-            "ultimo_guardado"
-        ] = token_actual
 
         rows = []
 
@@ -2786,6 +2811,11 @@ if modulo == "🕵 Supervisión":
                         ","
                     ),
 
+                    st.session_state.get(
+                        f"{concepto}_resultado",
+                        "SIN OBSERVACIONES"
+                    ),
+
                     id_supervision
             ])
 
@@ -2857,6 +2887,11 @@ if modulo == "🕵 Supervisión":
                         ","
                     ),
 
+                    st.session_state.get(
+                        f"{concepto}_resultado",
+                        "SIN OBSERVACIONES"
+                    ),
+
                     id_supervision
             ])
 
@@ -2922,6 +2957,11 @@ if modulo == "🕵 Supervisión":
                     ).replace(
                         ";",
                         ","
+                    ),
+
+                    st.session_state.get(
+                        f"{concepto}_resultado",
+                        "SIN OBSERVACIONES"
                     ),
 
                     id_supervision
@@ -3022,10 +3062,6 @@ if modulo == "🕵 Supervisión":
             "id_supervision",
             None
         )
-        st.session_state.pop(
-            "ultimo_guardado",
-            None
-        )
 
         st.balloons()
 
@@ -3066,23 +3102,27 @@ if modulo == "🕵 Supervisión":
             # RESULTADO
             # =========================
 
-            df_analisis["Resultado"] = np.where(
+            df_analisis["Resultado"] = (
 
-                df_analisis[
-                    "Observaciones"
-                ]
+                df_analisis["RESULTADO"]
+
                 .astype(str)
-                .str.lower()
+
+                .str.upper()
+
                 .str.strip()
-                .str.startswith(
-                    "incorrecto"
-                ),
 
-                "❌",
+                .replace({
 
-                "✅"
+                    "CORRECTO": "✅",
+
+                    "INCORRECTO": "❌",
+
+                    "SIN OBSERVACIONES": "⚪"
+
+                })
+
             )
-
             # =========================
             # NORMALIZAR CONCEPTOS
             # =========================
@@ -3140,23 +3180,56 @@ if modulo == "🕵 Supervisión":
                 .nunique()
             )
 
+            resumen_supervision = (
+
+                df_analisis
+
+                .groupby(
+                    "ID_SUPERVISION"
+                )["Resultado"]
+
+                .apply(
+
+                    lambda x:
+
+                    "❌"
+
+                    if "❌" in x.values
+
+                    else (
+
+                        "⚪"
+
+                        if all(
+                            v == "⚪"
+                            for v in x.values
+                        )
+
+                        else "✅"
+                    )
+                )
+
+            )
+
             total_correctos = (
 
-                df_analisis[
-                    "Resultado"
-                ]
-                == "✅"
-
-            ).sum()
+                resumen_supervision
+                .eq("✅")
+                .sum()
+            )
 
             total_incorrectos = (
 
-                df_analisis[
-                    "Resultado"
-                ]
-                == "❌"
+                resumen_supervision
+                .eq("❌")
+                .sum()
+            )
+            total_sin_obs = (
 
-            ).sum()
+                resumen_supervision
+                .eq("⚪")
+                .sum()
+            )
 
             total_registros = (
                 total_correctos
@@ -3183,7 +3256,7 @@ if modulo == "🕵 Supervisión":
                 "### 📌 Resumen ejecutivo"
             )
 
-            c1, c2, c3, c4, c5 = st.columns(5)
+            c1, c2, c3, c4, c5, c6 = st.columns(6)
 
             with c1:
 
@@ -3216,6 +3289,13 @@ if modulo == "🕵 Supervisión":
             with c5:
 
                 st.metric(
+                    "⚪ Sin observaciones",
+                    total_sin_obs
+                )
+
+            with c6:
+
+                st.metric(
                     "% Cumplimiento",
                     f"{cumplimiento}%"
                 )
@@ -3228,6 +3308,23 @@ if modulo == "🕵 Supervisión":
 
             st.markdown(
                 "### 📋 Matriz cumplimiento"
+            )
+            df_analisis["Fecha"] = pd.to_datetime(
+
+                df_analisis["Fecha"],
+
+                format="%d/%m/%Y",
+
+                errors="coerce"
+            )
+
+            df_analisis = (
+
+                df_analisis
+
+                .sort_values(
+                    by="Fecha"
+                )
             )
 
             matriz = (
@@ -3242,11 +3339,11 @@ if modulo == "🕵 Supervisión":
 
                     values="Resultado",
 
-                    aggfunc="first"
+                    aggfunc="last"
 
                 )
 
-                .fillna("-")
+                .fillna("⚪")
 
                 .reset_index()
             )
@@ -3369,8 +3466,8 @@ if modulo == "🕵 Supervisión":
 
             for i, row in historial_supervision.iterrows():
 
-                c1, c2, c3, c4, c5 = st.columns(
-                    [2,2,3,2,1]
+                c1, c2, c3, c4, c5, c6 = st.columns(
+                    [2,2,3,2,2,1]
                 )
 
                 with c1:
