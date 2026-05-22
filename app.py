@@ -3380,7 +3380,7 @@ if modulo == "🕵 Supervisión":
 
                         "CLUES",
 
-                        "Almacen"
+                        "Almacén"
 
                     ],
 
@@ -3407,7 +3407,7 @@ if modulo == "🕵 Supervisión":
 
                     "CLUES",
 
-                    "Almacen"
+                    "Almacén"
                 ]
             ]
 
