@@ -3309,16 +3309,7 @@ if modulo == "🕵 Supervisión":
             st.markdown(
                 "### 📋 Matriz cumplimiento"
             )
-            st.caption(
 
-                " | ".join([
-
-                    f"{k}: {v}"
-
-                    for k, v in descripcion_anexos.items()
-
-                ])
-            )
             df_analisis["Fecha"] = pd.to_datetime(
 
                 df_analisis["Fecha"],
@@ -3363,6 +3354,16 @@ if modulo == "🕵 Supervisión":
                 "Físico": "Inventario físico"
             }
 
+            st.caption(
+
+                " | ".join([
+
+                    f"{k}: {v}"
+
+                    for k, v in descripcion_anexos.items()
+
+                ])
+            )
             matriz = (
 
                 df_analisis
