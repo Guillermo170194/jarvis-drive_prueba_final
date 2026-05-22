@@ -3232,8 +3232,12 @@ if modulo == "🕵 Supervisión":
             )
 
             total_registros = (
+
                 total_correctos
+
                 + total_incorrectos
+
+                + total_sin_obs
             )
 
             if total_registros > 0:
@@ -3397,7 +3401,14 @@ if modulo == "🕵 Supervisión":
 
                 col for col in matriz.columns
 
-                if col != "CLUES"
+                if col not in [
+
+                    "Entidad",
+
+                    "CLUES",
+
+                    "Almacen"
+                ]
             ]
 
             matriz["%"] = (
